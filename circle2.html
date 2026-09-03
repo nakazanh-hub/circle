@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>円の方程式 トレーニングアプリ</title>
+  <!-- MathJax JS for Math Rendering -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      background-color: #f4f7f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .quiz-container {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      width: 95%;
+      max-width: 1200px;
+      min-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .app-title { font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 12px; }
+    .app-subtitle { font-size: 18px; color: #6c757d; margin-bottom: 28px; }
+
+    /* 初期設定フォーム */
+    .user-info-form { display: flex; flex-direction: column; gap: 18px; text-align: left; max-width: 600px; margin: 0 auto; width: 100%; }
+    .form-group-inline { display: flex; gap: 12px; }
+    .form-group-inline > div { flex: 1; }
+    .user-info-form label { font-size: 15px; font-weight: bold; color: #495057; display: block; margin-bottom: 6px; }
+    .user-info-form input, .user-info-form select { 
+      width: 100%; 
+      padding: 12px 14px; 
+      border: 1px solid #ced4da; 
+      border-radius: 8px; 
+      font-size: 18px; 
+      background-color: #fff;
+    }
+
+    /* ユーザー表示バー */
+    .user-display-bar {
+      background-color: #eef6ff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #007bff;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-edit-user { background: none; border: none; color: #6c757d; font-size: 14px; cursor: pointer; text-decoration: underline; }
+
+    /* メニュー画面スタイル */
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .menu-card {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 20px 24px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .menu-card:hover {
+      background: #eef6ff;
+      border-color: #007bff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+    }
+
+    .menu-card.similar-card {
+      background: #fffcf8;
+      border-color: #ffe8cc;
+      border-left: 6px solid #fd7e14;
+    }
+    .menu-card.similar-card:hover {
+      background: #fff4e6;
+      border-color: #fd7e14;
+      box-shadow: 0 4px 12px rgba(253, 126, 20, 0.15);
+    }
+    .menu-card.similar-card .menu-card-badge {
+      background: #fd7e14;
+    }
+
+    .menu-card-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 6px;
+    }
+    .menu-card-desc {
+      font-size: 15px;
+      color: #6c757d;
+    }
+    .menu-card-stats { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .menu-card-badge {
+      background: #007bff;
+      color: white;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 12px;
+      white-space: nowrap;
+    }
+    .menu-card-accuracy { font-size: 15px; font-weight: bold; color: #28a745; }
+
+    /* 問題画面スタイル */
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .question-number {
+      font-size: 18px;
+      color: #6c757d;
+      font-weight: 600;
+    }
+    .btn-small-menu {
+      background: #e9ecef;
+      color: #495057;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn-small-menu:hover { background: #dee2e6; }
+
+    .question-title {
+      display: block !important;
+      text-align: left !important;
+      font-size: 24px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      line-height: 1.8;
+      word-break: break-word;
+    }
+    
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .btn-option {
+      background-color: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 16px 12px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #333;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      min-height: 90px;
+      white-space: nowrap;
+    }
+    .btn-option:hover:not(:disabled) {
+      background-color: #e9ecef;
+      border-color: #4a90e2;
+    }
+    .btn-option:disabled {
+      cursor: default;
+      opacity: 0.85;
+    }
+    
+    .btn-option.correct-choice {
+      background-color: #d4edda !important;
+      border-color: #c3e6cb !important;
+      color: #155724 !important;
+    }
+    .btn-option.wrong-choice {
+      background-color: #f8d7da !important;
+      border-color: #f5c6cb !important;
+      color: #721c24 !important;
+    }
+
+    .result-section {
+      margin-top: 24px;
+      display: none;
+      text-align: left;
+      background-color: #f8f9fa;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+    .result-header {
+      font-size: 26px;
+      font-weight: bold;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .correct { color: #28a745; }
+    .incorrect { color: #dc3545; }
+    
+    .explanation-box {
+      font-size: 18px;
+      color: #495057;
+      line-height: 1.8;
+    }
+    .explanation-title {
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 8px;
+      border-bottom: 2px solid #007bff;
+      display: inline-block;
+      padding-bottom: 4px;
+    }
+    
+    .send-status { font-size: 15px; margin-top: 15px; color: #007bff; font-weight: bold; }
+
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      display: block;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+    .btn-primary:hover { background-color: #0056b3; }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      display: block;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+    .btn-secondary:hover { background-color: #5a6268; }
+
+    .btn-danger {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      display: block;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+    .btn-danger:hover { background-color: #c82333; }
+  </style>
+</head>
+<body>
+
+<div class="quiz-container">
+  
+  <!-- 0. ユーザー情報入力画面 -->
+  <div id="user-info-box">
+    <div class="app-title">📝 初期設定</div>
+    <div class="app-subtitle">学習を開始する前に名前を入力してください</div>
+    
+    <form class="user-info-form" onsubmit="saveUserInfo(event)">
+      <div class="form-group-inline">
+        <div>
+          <label for="input-grade">年</label>
+          <select id="input-grade" required>
+            <option value="">選択</option>
+          </select>
+        </div>
+        <div>
+          <label for="input-class">組</label>
+          <select id="input-class" required>
+            <option value="">選択</option>
+          </select>
+        </div>
+        <div>
+          <label for="input-number">番号</label>
+          <select id="input-number" required>
+            <option value="">選択</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label for="input-name">氏名</label>
+        <input type="text" id="input-name" placeholder="山田 太郎" required>
+      </div>
+      <button type="submit" class="btn-primary">学習を開始する</button>
+      <button type="button" class="btn-danger" onclick="resetAllData()">🔄 ユーザー情報・全解答履歴をリセット</button>
+    </form>
+  </div>
+
+  <!-- 1. メニュー画面 -->
+  <div id="menu-box" style="display: none;">
+    <div class="user-display-bar">
+      <span id="user-display-text"></span>
+      <button class="btn-edit-user" onclick="showUserInfoForm()">設定変更</button>
+    </div>
+    <div class="app-title">📚 数学トレーニング</div>
+    <div class="app-subtitle">挑戦したい問題セットを選択してください</div>
+    <div class="menu-list" id="menu-list-container"></div>
+  </div>
+
+  <!-- 2. クイズ画面 -->
+  <div id="quiz-box" style="display: none;">
+    <div class="quiz-header">
+      <div class="question-number" id="q-num">第 1 問</div>
+      <button class="btn-small-menu" onclick="showMenu()">メニューに戻る</button>
+    </div>
+    <div class="question-title" id="q-title">問題の読み込み中...</div>
+    <div class="options-grid" id="options-container"></div>
+    
+    <div class="result-section" id="result-section">
+      <div class="result-header" id="result-text"></div>
+      <div class="explanation-box">
+        <div class="explanation-title">解説</div>
+        <div id="explanation-text"></div>
+      </div>
+      <button class="btn-primary" id="next-btn" onclick="nextQuestion()">次の問題へ</button>
+    </div>
+  </div>
+
+  <!-- 3. 結果発表画面 -->
+  <div id="score-box" style="display: none;">
+    <h2 style="color: #2c3e50; margin-top: 0;" id="score-title">🎉 全問終了 🎉</h2>
+    <div id="score-text" style="font-size: 26px; font-weight: bold; color: #007bff; margin: 20px 0 10px 0;"></div>
+    <div id="accuracy-text" style="font-size: 22px; font-weight: bold; color: #28a745; margin-bottom: 10px;"></div>
+    <div id="details-text" style="font-size: 20px; font-weight: bold; color: #495057; margin-bottom: 20px; letter-spacing: 2px;"></div>
+    <div class="send-status" id="send-status">先生へデータを送信中...</div>
+
+    <div style="margin-top: 24px; max-width: 500px; margin-left: auto; margin-right: auto;">
+      <button class="btn-primary" onclick="restartQuiz()">もう一度解く</button>
+      <button class="btn-secondary" onclick="showMenu()">メニュー画面に戻る</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyIB8FFWwMT-pAtZXvPS78MPP5IIyjf4HfbTDCD4MdA7xBhYziBdPlpz8_PhX-DV20u/exec";
+
+  // 問題データベース
+  const quizSets = [
+    {
+      id: "set-circle-equations-original",
+      title: "【原典】円の方程式",
+      description: "教科書基本問題（全13問）",
+      isSimilar: false,
+      questions: [
+        {
+          text: "中心が点 $(2, 1)$ で半径が $3$ である円の方程式を求めよ。",
+          correct: "$(x - 2)^2 + (y - 1)^2 = 9$",
+          dummy: ["$(x + 2)^2 + (y + 1)^2 = 9$", "$(x - 2)^2 + (y - 1)^2 = 3$", "$(x + 2)^2 + (y + 1)^2 = 3$"],
+          explanation: "中心 $(a, b)$、半径 $r$ の円の方程式は $(x - a)^2 + (y - b)^2 = r^2$ です。<br>中心 $(2, 1)$、半径 $3$ を代入すると、<br>$(x - 2)^2 + (y - 1)^2 = 3^2 = 9$ となります。"
+        },
+        {
+          text: "中心が点 $(-2, 3)$ で半径が $\\sqrt{5}$ である円の方程式を求めよ。",
+          correct: "$(x + 2)^2 + (y - 3)^2 = 5$",
+          dummy: ["$(x - 2)^2 + (y + 3)^2 = 5$", "$(x + 2)^2 + (y - 3)^2 = \\sqrt{5}$", "$(x - 2)^2 + (y + 3)^2 = 25$"],
+          explanation: "中心 $(-2, 3)$、半径 $\\sqrt{5}$ を公式に代入します。<br>$(x - (-2))^2 + (y - 3)^2 = (\\sqrt{5})^2$<br>したがって、$(x + 2)^2 + (y - 3)^2 = 5$ となります。"
+        },
+        {
+          text: "中心が点 $(0, 3)$ で半径が $4$ である円の方程式を求めよ。",
+          correct: "$x^2 + (y - 3)^2 = 16$",
+          dummy: ["$(x - 3)^2 + y^2 = 16$", "$x^2 + (y + 3)^2 = 16$", "$x^2 + (y - 3)^2 = 4$"],
+          explanation: "中心 $(0, 3)$、半径 $4$ を公式に代入します。<br>$(x - 0)^2 + (y - 3)^2 = 4^2$<br>したがって、$x^2 + (y - 3)^2 = 16$ となります。"
+        },
+        {
+          text: "中心が原点で半径が $\\sqrt{3}$ である円の方程式を求めよ。",
+          correct: "$x^2 + y^2 = 3$",
+          dummy: ["$x^2 + y^2 = 9$", "$x^2 + y^2 = \\sqrt{3}$", "$(x - 1)^2 + (y - 1)^2 = 3$"],
+          explanation: "原点 $(0, 0)$ が中心で半径 $r$ の円の方程式は $x^2 + y^2 = r^2$ です。<br>半径 $\\sqrt{3}$ を代入すると、$x^2 + y^2 = (\\sqrt{3})^2 = 3$ となります。"
+        },
+        {
+          text: "方程式 $(x - 4)^2 + (y - 2)^2 = 25$ が表す円の中心の座標と半径を求めよ。",
+          correct: "中心 $(4, 2)$，半径 $5$",
+          dummy: ["中心 $(-4, -2)$，半径 $5$", "中心 $(4, 2)$，半径 $25$", "中心 $(-4, -2)$，半径 $25$"],
+          explanation: "標準形 $(x - a)^2 + (y - b)^2 = r^2$ と比較します。<br>$a = 4, b = 2, r^2 = 25$ より、$r = 5$ です。<br>したがって、中心は $(4, 2)$、半径は $5$ です。"
+        },
+        {
+          text: "方程式 $(x + 3)^2 + y^2 = 10$ が表す円の中心の座標と半径を求めよ。",
+          correct: "中心 $(-3, 0)$，半径 $\\sqrt{10}$",
+          dummy: ["中心 $(3, 0)$，半径 $\\sqrt{10}$", "中心 $(-3, 0)$，半径 $10$", "中心 $(3, 0)$，半径 $10$"],
+          explanation: "$(x - (-3))^2 + (y - 0)^2 = (\\sqrt{10})^2$ と変形できます。<br>したがって、中心は $(-3, 0)$、半径は $\\sqrt{10}$ です。"
+        },
+        {
+          text: "2点 $\\text{A}(4, 0)$, $\\text{B}(6, 2)$ を結ぶ線分を直径とする円について、中心の座標と半径を求めよ。",
+          correct: "中心 $(5, 1)$，半径 $\\sqrt{2}$",
+          dummy: ["中心 $(5, 1)$，半径 $2$", "中心 $(10, 2)$，半径 $\\sqrt{2}$", "中心 $(5, 1)$，半径 $2\\sqrt{2}$"],
+          explanation: "中心は線分 $\\text{AB}$ の中点なので、$\\left(\\frac{4+6}{2}, \\frac{0+2}{2}\\right) = (5, 1)$ です。<br>半径は中心 $(5, 1)$ と点 $\\text{A}(4, 0)$ の距離なので、$\\sqrt{(4-5)^2 + (0-1)^2} = \\sqrt{1+1} = \\sqrt{2}$ となります。"
+        },
+        {
+          text: "2点 $\\text{A}(4, 0)$, $\\text{B}(6, 2)$ を結ぶ線分を直径とする円の方程式を求めよ。",
+          correct: "$(x - 5)^2 + (y - 1)^2 = 2$",
+          dummy: ["$(x + 5)^2 + (y + 1)^2 = 2$", "$(x - 5)^2 + (y - 1)^2 = 4$", "$(x - 5)^2 + (y - 1)^2 = \\sqrt{2}$"],
+          explanation: "中心 $(5, 1)$、半径 $\\sqrt{2}$ より、方程式は $(x - 5)^2 + (y - 1)^2 = (\\sqrt{2})^2 = 2$ となります。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 - 2x - 4y + 1 = 0$ はどのような図形を表すか。",
+          correct: "中心 $(1, 2)$，半径 $2$ の円",
+          dummy: ["中心 $(-1, -2)$，半径 $2$ の円", "中心 $(1, 2)$，半径 $4$ の円", "中心 $(-1, -2)$，半径 $4$ の円"],
+          explanation: "平方完成します。<br>$(x^2 - 2x) + (y^2 - 4y) + 1 = 0$<br>$(x - 1)^2 - 1 + (y - 2)^2 - 4 + 1 = 0$<br>$(x - 1)^2 + (y - 2)^2 = 4$<br>したがって、中心 $(1, 2)$、半径 $2$ の円を表します。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 - 6x = 0$ はどのような図形を表すか。",
+          correct: "中心 $(3, 0)$，半径 $3$ の円",
+          dummy: ["中心 $(-3, 0)$，半径 $3$ の円", "中心 $(3, 0)$，半径 $9$ の円", "中心 $(0, 3)$，半径 $3$ の円"],
+          explanation: "平方完成します。<br>$(x^2 - 6x) + y^2 = 0$<br>$(x - 3)^2 - 9 + y^2 = 0$<br>$(x - 3)^2 + y^2 = 9$<br>したがって、中心 $(3, 0)$、半径 $3$ の円を表します。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 + 4x + 6y - 3 = 0$ はどのような図形を表すか。",
+          correct: "中心 $(-2, -3)$，半径 $4$ の円",
+          dummy: ["中心 $(2, 3)$，半径 $4$ の円", "中心 $(-2, -3)$，半径 $16$ の円", "中心 $(2, 3)$，半径 $16$ の円"],
+          explanation: "平方完成します。<br>$(x^2 + 4x) + (y^2 + 6y) - 3 = 0$<br>$(x + 2)^2 - 4 + (y + 3)^2 - 9 - 3 = 0$<br>$(x + 2)^2 + (y + 3)^2 = 16$<br>したがって、中心 $(-2, -3)$、半径 $4$ の円を表します。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 + 6x - 2y + 4 = 0$ はどのような図形を表すか。",
+          correct: "中心 $(-3, 1)$，半径 $\\sqrt{6}$ の円",
+          dummy: ["中心 $(3, -1)$，半径 $\\sqrt{6}$ の円", "中心 $(-3, 1)$，半径 $6$ の円", "中心 $(3, -1)$，半径 $6$ の円"],
+          explanation: "平方完成します。<br>$(x^2 + 6x) + (y^2 - 2y) + 4 = 0$<br>$(x + 3)^2 - 9 + (y - 1)^2 - 1 + 4 = 0$<br>$(x + 3)^2 + (y - 1)^2 = 6$<br>したがって、中心 $(-3, 1)$、半径 $\\sqrt{6}$ の円を表します。"
+        },
+        {
+          text: "3点 $\\text{A}(-2, 7)$, $\\text{B}(1, -2)$, $\\text{C}(5, 0)$ を通る円の方程式を求めよ。",
+          correct: "$x^2 + y^2 - 4x - 6y - 19 = 0$",
+          dummy: ["$x^2 + y^2 + 4x + 6y - 19 = 0$", "$x^2 + y^2 - 2x - 3y - 19 = 0$", "$x^2 + y^2 - 4x - 6y + 19 = 0$"],
+          explanation: "円の一般形 $x^2 + y^2 + lx + my + n = 0$ に3点を代入します。<br>点A: $4 + 49 - 2l + 7m + n = 0 \\Rightarrow -2l + 7m + n = -53$<br>点B: $1 + 4 + l - 2m + n = 0 \\Rightarrow l - 2m + n = -5$<br>点C: $25 + 0 + 5l + n = 0 \\Rightarrow 5l + n = -25$<br>これを解くと $l = -4, m = -6, n = -19$ となります。"
+        }
+      ]
+    },
+    {
+      id: "set-circle-equations-similar",
+      title: "【類問】円の方程式",
+      description: "数値を変更した応用・確認問題セット（全13問）",
+      isSimilar: true,
+      questions: [
+        {
+          text: "中心が点 $(3, 4)$ で半径が $5$ である円の方程式を求めよ。",
+          correct: "$(x - 3)^2 + (y - 4)^2 = 25$",
+          dummy: ["$(x + 3)^2 + (y + 4)^2 = 25$", "$(x - 3)^2 + (y - 4)^2 = 5$", "$(x + 3)^2 + (y + 4)^2 = 5$"],
+          explanation: "公式 $(x - a)^2 + (y - b)^2 = r^2$ に中心 $(3, 4)$、半径 $5$ を代入します。<br>$(x - 3)^2 + (y - 4)^2 = 5^2 = 25$ となります。"
+        },
+        {
+          text: "中心が点 $(1, -4)$ で半径が $\\sqrt{7}$ である円の方程式を求めよ。",
+          correct: "$(x - 1)^2 + (y + 4)^2 = 7$",
+          dummy: ["$(x + 1)^2 + (y - 4)^2 = 7$", "$(x - 1)^2 + (y + 4)^2 = \\sqrt{7}$", "$(x + 1)^2 + (y - 4)^2 = 49$"],
+          explanation: "公式に中心 $(1, -4)$、半径 $\\sqrt{7}$ を代入します。<br>$(x - 1)^2 + (y - (-4))^2 = (\\sqrt{7})^2$<br>したがって、$(x - 1)^2 + (y + 4)^2 = 7$ となります。"
+        },
+        {
+          text: "中心が点 $(-5, 0)$ で半径が $2$ である円の方程式を求めよ。",
+          correct: "$(x + 5)^2 + y^2 = 4$",
+          dummy: ["$(x - 5)^2 + y^2 = 4$", "$x^2 + (y + 5)^2 = 4$", "$(x + 5)^2 + y^2 = 2$"],
+          explanation: "公式に中心 $(-5, 0)$、半径 $2$ を代入します。<br>$(x - (-5))^2 + (y - 0)^2 = 2^2$<br>したがって、$(x + 5)^2 + y^2 = 4$ となります。"
+        },
+        {
+          text: "中心が原点で半径が $\\sqrt{6}$ である円の方程式を求めよ。",
+          correct: "$x^2 + y^2 = 6$",
+          dummy: ["$x^2 + y^2 = 36$", "$x^2 + y^2 = \\sqrt{6}$", "$(x - 1)^2 + (y - 1)^2 = 6$"],
+          explanation: "原点中心の円の方程式は $x^2 + y^2 = r^2$ です。<br>半径 $\\sqrt{6}$ を代入して、$x^2 + y^2 = (\\sqrt{6})^2 = 6$ となります。"
+        },
+        {
+          text: "方程式 $(x - 1)^2 + (y + 5)^2 = 16$ が表す円の中心の座標と半径を求めよ。",
+          correct: "中心 $(1, -5)$，半径 $4$",
+          dummy: ["中心 $(-1, 5)$，半径 $4$", "中心 $(1, -5)$，半径 $16$", "中心 $(-1, 5)$，半径 $16$"],
+          explanation: "標準形 $(x - a)^2 + (y - b)^2 = r^2$ と比較します。<br>$a = 1, b = -5, r^2 = 16 \\Rightarrow r = 4$<br>したがって、中心は $(1, -5)$、半径は $4$ です。"
+        },
+        {
+          text: "方程式 $x^2 + (y - 2)^2 = 13$ が表す円の中心の座標と半径を求めよ。",
+          correct: "中心 $(0, 2)$，半径 $\\sqrt{13}$",
+          dummy: ["中心 $(2, 0)$，半径 $\\sqrt{13}$", "中心 $(0, -2)$，半径 $13$", "中心 $(0, 2)$，半径 $13$"],
+          explanation: "$(x - 0)^2 + (y - 2)^2 = (\\sqrt{13})^2$ と変形できます。<br>したがって、中心は $(0, 2)$、半径は $\\sqrt{13}$ です。"
+        },
+        {
+          text: "2点 $\\text{A}(1, 3)$, $\\text{B}(5, -1)$ を結ぶ線分を直径とする円について、中心の座標と半径を求めよ。",
+          correct: "中心 $(3, 1)$，半径 $2\\sqrt{2}$",
+          dummy: ["中心 $(3, 1)$，半径 $8$", "中心 $(6, 2)$，半径 $2\\sqrt{2}$", "中心 $(3, 1)$，半径 $2$"],
+          explanation: "中心は中点なので $\\left(\\frac{1+5}{2}, \\frac{3+(-1)}{2}\\right) = (3, 1)$ です。<br>半径は中心 $(3, 1)$ と点 $\\text{A}(1, 3)$ の距離なので、<br>$\\sqrt{(1-3)^2 + (3-1)^2} = \\sqrt{4 + 4} = \\sqrt{8} = 2\\sqrt{2}$ となります。"
+        },
+        {
+          text: "2点 $\\text{A}(1, 3)$, $\\text{B}(5, -1)$ を結ぶ線分を直径とする円の方程式を求めよ。",
+          correct: "$(x - 3)^2 + (y - 1)^2 = 8$",
+          dummy: ["$(x + 3)^2 + (y + 1)^2 = 8$", "$(x - 3)^2 + (y - 1)^2 = 64$", "$(x - 3)^2 + (y - 1)^2 = 2\\sqrt{2}$"],
+          explanation: "中心 $(3, 1)$、半径 $2\\sqrt{2}$ より、方程式は<br>$(x - 3)^2 + (y - 1)^2 = (2\\sqrt{2})^2 = 8$ となります。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 - 4x - 6y + 4 = 0$ はどのような図形を表すか。",
+          correct: "中心 $(2, 3)$，半径 $3$ の円",
+          dummy: ["中心 $(-2, -3)$，半径 $3$ の円", "中心 $(2, 3)$，半径 $9$ の円", "中心 $(-2, -3)$，半径 $9$ の円"],
+          explanation: "平方完成します。<br>$(x - 2)^2 - 4 + (y - 3)^2 - 9 + 4 = 0$<br>$(x - 2)^2 + (y - 3)^2 = 9$<br>したがって、中心 $(2, 3)$、半径 $3$ の円を表します。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 + 8y = 0$ はどのような図形を表すか。",
+          correct: "中心 $(0, -4)$，半径 $4$ の円",
+          dummy: ["中心 $(0, 4)$，半径 $4$ の円", "中心 $(-4, 0)$，半径 $4$ の円", "中心 $(0, -4)$，半径 $16$ の円"],
+          explanation: "平方完成します。<br>$x^2 + (y + 4)^2 - 16 = 0$<br>$x^2 + (y + 4)^2 = 16$<br>したがって、中心 $(0, -4)$、半径 $4$ の円を表します。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 - 8x + 2y + 8 = 0$ はどのような図形を表すか。",
+          correct: "中心 $(4, -1)$，半径 $3$ の円",
+          dummy: ["中心 $(-4, 1)$，半径 $3$ の円", "中心 $(4, -1)$，半径 $9$ の円", "中心 $(-4, 1)$，半径 $9$ の円"],
+          explanation: "平方完成します。<br>$(x - 4)^2 - 16 + (y + 1)^2 - 1 + 8 = 0$<br>$(x - 4)^2 + (y + 1)^2 = 9$<br>したがって、中心 $(4, -1)$、半径 $3$ の円を表します。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 + 2x - 4y - 1 = 0$ はどのような図形を表すか。",
+          correct: "中心 $(-1, 2)$，半径 $\\sqrt{6}$ の円",
+          dummy: ["中心 $(1, -2)$，半径 $\\sqrt{6}$ の円", "中心 $(-1, 2)$，半径 $6$ の円", "中心 $(1, -2)$，半径 $6$ の円"],
+          explanation: "平方完成します。<br>$(x + 1)^2 - 1 + (y - 2)^2 - 4 - 1 = 0$<br>$(x + 1)^2 + (y - 2)^2 = 6$<br>したがって、中心 $(-1, 2)$、半径 $\\sqrt{6}$ の円を表します。"
+        },
+        {
+          text: "3点 $\\text{A}(0, 0)$, $\\text{B}(2, 0)$, $\\text{C}(0, 4)$ を通る円の方程式を求めよ。",
+          correct: "$x^2 + y^2 - 2x - 4y = 0$",
+          dummy: ["$x^2 + y^2 + 2x + 4y = 0$", "$x^2 + y^2 - 4x - 2y = 0$", "$x^2 + y^2 - 2x - 4y + 4 = 0$"],
+          explanation: "円の一般形 $x^2 + y^2 + lx + my + n = 0$ に3点を代入します。<br>原点 $(0,0)$ を通るので $n = 0$<br>点 $\\text{B}(2,0)$: $4 + 2l = 0 \\Rightarrow l = -2$<br>点 $\\text{C}(0,4)$: $16 + 4m = 0 \\Rightarrow m = -4$<br>よって、方程式は $x^2 + y^2 - 2x - 4y = 0$ となります。"
+        }
+      ]
+    }
+  ];
+
+  let currentSet = null;
+  let currentQuestions = [];
+  let currentQIndex = 0;
+  let score = 0;
+  let userAnswers = []; 
+  let userInfo = { grade: "", classNum: "", number: "", name: "" };
+
+  function populateSelectOptions() {
+    const gradeSelect = document.getElementById("input-grade");
+    const classSelect = document.getElementById("input-class");
+    const numberSelect = document.getElementById("input-number");
+
+    gradeSelect.innerHTML = '<option value="">選択</option>';
+    classSelect.innerHTML = '<option value="">選択</option>';
+    numberSelect.innerHTML = '<option value="">選択</option>';
+
+    for (let i = 1; i <= 3; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      gradeSelect.appendChild(opt);
+    }
+
+    for (let i = 1; i <= 4; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      classSelect.appendChild(opt);
+    }
+
+    for (let i = 1; i <= 40; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      numberSelect.appendChild(opt);
+    }
+  }
+
+  function loadUserInfo() {
+    const saved = localStorage.getItem("mathQuizUserInfo");
+    if (saved) {
+      userInfo = JSON.parse(saved);
+      if (userInfo.grade && userInfo.classNum && userInfo.number && userInfo.name) {
+        document.getElementById("input-grade").value = userInfo.grade;
+        document.getElementById("input-class").value = userInfo.classNum;
+        document.getElementById("input-number").value = userInfo.number;
+        document.getElementById("input-name").value = userInfo.name;
+        updateUserDisplayBar();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function saveUserInfo(e) {
+    e.preventDefault();
+    userInfo.grade = document.getElementById("input-grade").value;
+    userInfo.classNum = document.getElementById("input-class").value;
+    userInfo.number = document.getElementById("input-number").value;
+    userInfo.name = document.getElementById("input-name").value.trim();
+
+    localStorage.setItem("mathQuizUserInfo", JSON.stringify(userInfo));
+    updateUserDisplayBar();
+    showMenu();
+  }
+
+  function resetAllData() {
+    if (confirm("名前・学年組情報およびすべての解答履歴（正答率）を削除して初期化しますか？")) {
+      localStorage.clear();
+      userInfo = { grade: "", classNum: "", number: "", name: "" };
+      document.getElementById("input-grade").value = "";
+      document.getElementById("input-class").value = "";
+      document.getElementById("input-number").value = "";
+      document.getElementById("input-name").value = "";
+      alert("データをすべてリセットしました。");
+      showUserInfoForm();
+    }
+  }
+
+  function updateUserDisplayBar() {
+    const textEl = document.getElementById("user-display-text");
+    textEl.textContent = `👤 ${userInfo.grade}年 ${userInfo.classNum}組 ${userInfo.number}番  ${userInfo.name} さん`;
+  }
+
+  function showUserInfoForm() {
+    document.getElementById("user-info-box").style.display = "block";
+    document.getElementById("menu-box").style.display = "none";
+    document.getElementById("quiz-box").style.display = "none";
+    document.getElementById("score-box").style.display = "none";
+  }
+
+  function renderMath() {
+    if (window.MathJax) {
+      MathJax.typesetPromise();
+    }
+  }
+
+  function getAccuracyRecord(setId) {
+    const saved = localStorage.getItem(`accuracy_${setId}`);
+    return saved !== null ? saved : null;
+  }
+
+  function saveAccuracyRecord(setId, accuracyRate) {
+    localStorage.setItem(`accuracy_${setId}`, accuracyRate);
+  }
+
+  function showMenu() {
+    document.getElementById("user-info-box").style.display = "none";
+    document.getElementById("menu-box").style.display = "block";
+    document.getElementById("quiz-box").style.display = "none";
+    document.getElementById("score-box").style.display = "none";
+
+    const container = document.getElementById("menu-list-container");
+    container.innerHTML = "";
+
+    quizSets.forEach(set => {
+      const card = document.createElement("div");
+      
+      if (set.isSimilar) {
+        card.className = "menu-card similar-card";
+      } else {
+        card.className = "menu-card";
+      }
+
+      const acc = getAccuracyRecord(set.id);
+      const accText = acc !== null ? `正答率: ${acc}%` : "未回答";
+
+      card.innerHTML = `
+        <div>
+          <div class="menu-card-title">${set.title}</div>
+          <div class="menu-card-desc">${set.description}</div>
+        </div>
+        <div class="menu-card-stats">
+          <span class="menu-card-badge">${set.questions.length}問</span>
+          <span class="menu-card-accuracy">${accText}</span>
+        </div>
+      `;
+      card.onclick = () => startQuiz(set.id);
+      container.appendChild(card);
+    });
+
+    renderMath();
+  }
+
+  function startQuiz(setId) {
+    currentSet = quizSets.find(s => s.id === setId);
+    currentQuestions = [...currentSet.questions];
+    currentQIndex = 0;
+    score = 0;
+    userAnswers = [];
+
+    document.getElementById("menu-box").style.display = "none";
+    document.getElementById("quiz-box").style.display = "block";
+    document.getElementById("score-box").style.display = "none";
+
+    showQuestion();
+  }
+
+  function showQuestion() {
+    document.getElementById("result-section").style.display = "none";
+    
+    const q = currentQuestions[currentQIndex];
+    document.getElementById("q-num").textContent = `第 ${currentQIndex + 1} 問 / 全 ${currentQuestions.length} 問`;
+    
+    const titleEl = document.getElementById("q-title");
+    titleEl.innerHTML = q.text;
+
+    const optionsContainer = document.getElementById("options-container");
+    optionsContainer.innerHTML = "";
+
+    let choices = [
+      { text: q.correct, isCorrect: true },
+      ...q.dummy.map(d => ({ text: d, isCorrect: false }))
+    ];
+    
+    choices.sort(() => Math.random() - 0.5);
+
+    choices.forEach(choice => {
+      const btn = document.createElement("button");
+      btn.className = "btn-option";
+      btn.innerHTML = choice.text;
+      
+      btn.onclick = () => checkAnswer(choice.isCorrect, btn, q);
+      optionsContainer.appendChild(btn);
+    });
+
+    renderMath();
+  }
+
+  function checkAnswer(isCorrect, selectedBtn, questionObj) {
+    const buttons = document.querySelectorAll(".btn-option");
+    buttons.forEach(btn => btn.disabled = true);
+
+    userAnswers.push({
+      qIndex: currentQIndex + 1,
+      isCorrect: isCorrect
+    });
+
+    if (isCorrect) {
+      score++;
+      selectedBtn.classList.add("correct-choice");
+      document.getElementById("result-text").textContent = "⭕️ 正解！";
+      document.getElementById("result-text").className = "result-header correct";
+    } else {
+      selectedBtn.classList.add("wrong-choice");
+      document.getElementById("result-text").textContent = "❌ 不正解...";
+      document.getElementById("result-text").className = "result-header incorrect";
+      
+      buttons.forEach(btn => {
+        if (btn.innerHTML.trim() === questionObj.correct.trim()) {
+          btn.classList.add("correct-choice");
+        }
+      });
+    }
+
+    document.getElementById("explanation-text").innerHTML = questionObj.explanation;
+    document.getElementById("result-section").style.display = "block";
+
+    renderMath();
+  }
+
+  function nextQuestion() {
+    currentQIndex++;
+    if (currentQIndex < currentQuestions.length) {
+      showQuestion();
+    } else {
+      showScore();
+    }
+  }
+
+  function showScore() {
+    document.getElementById("quiz-box").style.display = "none";
+    document.getElementById("score-box").style.display = "block";
+
+    const total = currentQuestions.length;
+    const accuracyRate = Math.round((score / total) * 100);
+
+    saveAccuracyRecord(currentSet.id, accuracyRate);
+
+    let answerDetailsStr = userAnswers.map(a => a.isCorrect ? "○" : "×").join("");
+
+    document.getElementById("score-title").textContent = `🎉 「${currentSet.title}」 終了 🎉`;
+    document.getElementById("score-text").textContent = `${total} 問中 ${score} 問 正解！`;
+    document.getElementById("accuracy-text").textContent = `正答率: ${accuracyRate}%`;
+    document.getElementById("details-text").textContent = `結果: ${answerDetailsStr}`;
+
+    sendDataToTeacher(currentSet.id, currentSet.title, score, total, accuracyRate, answerDetailsStr);
+    renderMath();
+  }
+
+  function sendDataToTeacher(setId, setTitle, score, total, accuracy, details) {
+    const statusEl = document.getElementById("send-status");
+
+    if (!GAS_WEBAPP_URL) {
+      statusEl.textContent = "※送信先URL未設定（ローカル記録のみ完了）";
+      return;
+    }
+
+    statusEl.textContent = "先生へデータを送信中...";
+
+    const payload = {
+      grade: parseInt(userInfo.grade, 10),
+      classNum: parseInt(userInfo.classNum, 10),
+      number: parseInt(userInfo.number, 10),
+      name: userInfo.name,
+      setId: setId,
+      setTitle: setTitle,
+      score: score,
+      total: total,
+      accuracy: accuracy,
+      details: details
+    };
+
+    fetch(GAS_WEBAPP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      statusEl.textContent = "✅ 先生へ学習記録を正常に送信しました！";
+      statusEl.style.color = "#28a745";
+    })
+    .catch(err => {
+      console.error(err);
+      statusEl.textContent = "⚠️ 送信に失敗しました（ネットワークエラー）";
+      statusEl.style.color = "#dc3545";
+    });
+  }
+
+  function restartQuiz() {
+    startQuiz(currentSet.id);
+  }
+
+  populateSelectOptions(); 
+
+  if (loadUserInfo()) {
+    showMenu();
+  } else {
+    showUserInfoForm();
+  }
+</script>
+
+</body>
+</html>
