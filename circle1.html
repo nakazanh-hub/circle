@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>円の方程式 トレーニングアプリ</title>
+  <title>円の方程式（１） トレーニングアプリ</title>
   <!-- MathJax JS for Math Rendering -->
   <script>
     MathJax = {
@@ -89,7 +89,6 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
-    /* タブレット縦置き（~1024px）およびスマホ・中画面用のレスポンシブ（上下分割） */
     @media (max-width: 1024px) {
       body {
         padding: 10px;
@@ -189,11 +188,6 @@
       font-size: 20px;
       font-weight: bold;
       color: #2c3e50;
-      margin-bottom: 6px;
-    }
-    .menu-card-desc {
-      font-size: 15px;
-      color: #6c757d;
     }
     .menu-card-stats { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
     .menu-card-badge {
@@ -280,17 +274,16 @@
       background-color: #f8f9fa;
       border: 2px solid #e9ecef;
       border-radius: 12px;
-      padding: 14px 10px;
+      padding: 16px;
       font-size: 18px;
       cursor: pointer;
       transition: all 0.2s ease;
       color: #333;
       display: flex;
-      flex-direction: row;
       align-items: center;
       justify-content: center;
-      min-height: 80px;
-      white-space: nowrap;
+      min-height: 60px;
+      line-height: 1.4;
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
@@ -496,7 +489,7 @@
       <span id="user-display-text"></span>
       <button class="btn-edit-user" onclick="showUserInfoForm()">設定変更</button>
     </div>
-    <div class="app-title">📚 数学トレーニング</div>
+    <div class="app-title">📚 円の方程式（１）</div>
     <div class="app-subtitle">挑戦したい問題セットを選択してください</div>
     <div class="menu-list" id="menu-list-container"></div>
   </div>
@@ -578,8 +571,7 @@
   const quizSets = [
     {
       id: "set-circle-equations-original",
-      title: "【原典】円の方程式",
-      description: "教科書基本問題（全13問）",
+      title: "教科書基本問題(全13問)",
       isSimilar: false,
       questions: [
         {
@@ -664,8 +656,7 @@
     },
     {
       id: "set-circle-equations-similar",
-      title: "【類問】円の方程式",
-      description: "数値を変更した応用・確認問題セット（全13問）",
+      title: "【類問】確認問題セット(全13問)",
       isSimilar: true,
       questions: [
         {
@@ -881,7 +872,6 @@
       card.innerHTML = `
         <div>
           <div class="menu-card-title">${set.title}</div>
-          <div class="menu-card-desc">${set.description}</div>
         </div>
         <div class="menu-card-stats">
           <span class="menu-card-badge">${set.questions.length}問</span>
@@ -1194,7 +1184,6 @@
     return false;
   };
 
-  // コピー、切り取り、右クリック（コンテキストメニュー）、テキスト選択開始の無効化
   document.addEventListener("copy", preventCopyEvents);
   document.addEventListener("cut", preventCopyEvents);
   document.addEventListener("contextmenu", preventCopyEvents);
