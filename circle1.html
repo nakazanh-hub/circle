@@ -1,987 +1,1213 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>数学マスター - 円の方程式 1問一答</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { background-color: #1f1917; color: #f5f2eb; font-size: 1rem; }
-        .glass-card { background: rgba(38, 30, 27, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(184, 138, 92, 0.2); }
-        .frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: 0.9em; padding: 0 4px; }
-        .frac .num { border-bottom: 2px solid currentColor; padding-bottom: 1px; }
-        .frac .den { padding-top: 1px; }
-        
-        /* √の根号表記 */
-        .sqrt-wrap {
-            display: inline-flex;
-            align-items: center;
-            vertical-align: middle;
-            margin: 0 1px;
-        }
-        .sqrt-svg {
-            height: 1.2em;
-            width: auto;
-            display: inline-block;
-            vertical-align: middle;
-        }
-        .sqrt-body {
-            border-top: 2px solid currentColor;
-            padding-left: 2px;
-            padding-right: 2px;
-            margin-left: -1px;
-            display: inline-block;
-            line-height: 1.1;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>円の方程式 トレーニングアプリ</title>
+  <!-- MathJax JS for Math Rendering -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      background-color: #f4f7f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
 
-        sup { font-size: 0.75em; line-height: 0; vertical-align: super; }
-        .input-active { border-color: #d4a359 !important; background-color: #3d312a !important; box-shadow: 0 0 8px rgba(212, 163, 89, 0.35); }
-        .formatted-input-box {
-            font-size: 1.125rem;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-    </style>
+    .quiz-container {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      width: 95%;
+      max-width: 1200px;
+      min-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+      transition: all 0.3s ease;
+      /* テキスト選択不可の設定 */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    /* メモモード時のレイアウト切り替え (画面分割) */
+    .quiz-container.split-layout {
+      max-width: 98vw;
+      width: 98vw;
+      padding: 20px;
+      min-height: auto;
+      height: auto;
+      justify-content: flex-start;
+      overflow-y: auto;
+    }
+
+    .split-wrapper {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      width: 100%;
+      height: 100%;
+      text-align: left;
+    }
+
+    .split-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .split-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border: 2px solid #ced4da;
+      border-radius: 12px;
+      overflow: hidden;
+      min-width: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* タブレット縦置き（~1024px）およびスマホ・中画面用のレスポンシブ（上下分割） */
+    @media (max-width: 1024px) {
+      body {
+        padding: 10px;
+        align-items: flex-start;
+      }
+      .quiz-container {
+        padding: 20px;
+        min-height: auto;
+      }
+      .quiz-container.split-layout {
+        max-width: 100%;
+        width: 100%;
+        padding: 15px;
+      }
+      .split-wrapper {
+        flex-direction: column;
+      }
+      .split-right {
+        height: 380px;
+        flex-shrink: 0;
+      }
+    }
+
+    .app-title { font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 12px; }
+    .app-subtitle { font-size: 18px; color: #6c757d; margin-bottom: 28px; }
+
+    /* 初期設定フォーム */
+    .user-info-form { display: flex; flex-direction: column; gap: 18px; text-align: left; max-width: 600px; margin: 0 auto; width: 100%; }
+    .form-group-inline { display: flex; gap: 12px; }
+    .form-group-inline > div { flex: 1; }
+    .user-info-form label { font-size: 15px; font-weight: bold; color: #495057; display: block; margin-bottom: 6px; }
+    .user-info-form input, .user-info-form select { 
+      width: 100%; 
+      padding: 12px 14px; 
+      border: 1px solid #ced4da; 
+      border-radius: 8px; 
+      font-size: 18px; 
+      background-color: #fff;
+    }
+
+    /* ユーザー表示バー */
+    .user-display-bar {
+      background-color: #eef6ff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #007bff;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-edit-user { background: none; border: none; color: #6c757d; font-size: 14px; cursor: pointer; text-decoration: underline; }
+
+    /* メニュー画面スタイル */
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .menu-card {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 20px 24px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .menu-card:hover {
+      background: #eef6ff;
+      border-color: #007bff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+    }
+
+    .menu-card.similar-card {
+      background: #fffcf8;
+      border-color: #ffe8cc;
+      border-left: 6px solid #fd7e14;
+    }
+    .menu-card.similar-card:hover {
+      background: #fff4e6;
+      border-color: #fd7e14;
+      box-shadow: 0 4px 12px rgba(253, 126, 20, 0.15);
+    }
+    .menu-card.similar-card .menu-card-badge {
+      background: #fd7e14;
+    }
+
+    .menu-card-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 6px;
+    }
+    .menu-card-desc {
+      font-size: 15px;
+      color: #6c757d;
+    }
+    .menu-card-stats { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .menu-card-badge {
+      background: #007bff;
+      color: white;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 12px;
+      white-space: nowrap;
+    }
+    .menu-card-accuracy { font-size: 15px; font-weight: bold; color: #28a745; }
+
+    /* 問題画面スタイル */
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .header-controls {
+      display: flex;
+      gap: 10px;
+    }
+    .question-number {
+      font-size: 18px;
+      color: #6c757d;
+      font-weight: 600;
+    }
+    .btn-small-menu {
+      background: #e9ecef;
+      color: #495057;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn-small-menu:hover { background: #dee2e6; }
+    
+    .btn-memo {
+      background: #17a2b8;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn-memo:hover { background: #138496; }
+    .btn-memo.active { background: #e0a800; color: #212529; }
+
+    .question-title {
+      display: block !important;
+      text-align: left !important;
+      font-size: 22px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 24px;
+      line-height: 1.8;
+      word-break: break-word;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 600px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .btn-option {
+      background-color: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 14px 10px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #333;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      min-height: 80px;
+      white-space: nowrap;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    .btn-option:hover:not(:disabled) {
+      background-color: #e9ecef;
+      border-color: #4a90e2;
+    }
+    .btn-option:disabled {
+      cursor: default;
+      opacity: 0.85;
+    }
+    
+    .btn-option.correct-choice {
+      background-color: #d4edda !important;
+      border-color: #c3e6cb !important;
+      color: #155724 !important;
+    }
+    .btn-option.wrong-choice {
+      background-color: #f8d7da !important;
+      border-color: #f5c6cb !important;
+      color: #721c24 !important;
+    }
+
+    .result-section {
+      margin-top: 16px;
+      display: none;
+      text-align: left;
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+    .result-header {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .correct { color: #28a745; }
+    .incorrect { color: #dc3545; }
+    
+    .explanation-box {
+      font-size: 16px;
+      color: #495057;
+      line-height: 1.8;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    .explanation-title {
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 8px;
+      border-bottom: 2px solid #007bff;
+      display: inline-block;
+      padding-bottom: 4px;
+    }
+    
+    .send-status { font-size: 15px; margin-top: 15px; color: #007bff; font-weight: bold; }
+
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      display: block;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+    .btn-primary:hover { background-color: #0056b3; }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      display: block;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+    .btn-secondary:hover { background-color: #5a6268; }
+
+    .btn-danger {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      display: block;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+    .btn-danger:hover { background-color: #c82333; }
+
+    /* --- サイドメモ（計算用キャンバス）スタイル --- */
+    .memo-header {
+      padding: 10px 16px;
+      background: #2c3e50;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .memo-title { font-weight: bold; font-size: 16px; }
+    .memo-toolbar {
+      padding: 8px;
+      background: #f1f3f5;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      border-bottom: 1px solid #dee2e6;
+    }
+    .memo-toolbar button, .memo-toolbar select, .memo-toolbar input {
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #ced4da;
+      background: white;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .memo-toolbar button.active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    .memo-canvas-wrapper {
+      flex: 1;
+      position: relative;
+      background: #fdfdfd;
+      background-image: linear-gradient(#e5e5e5 1px, transparent 1px), linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+      background-size: 20px 20px;
+      touch-action: none;
+      min-height: 250px;
+    }
+    canvas#memo-canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      cursor: crosshair; 
+    }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans select-none text-[#e6ded8] relative">
+<body>
 
-    <!-- トースト通知エリア -->
-    <div id="toast-msg" style="display: none; opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease; transform: translate(-50%, -10px);" class="fixed top-16 left-1/2 z-[99999] px-6 py-3 rounded-xl font-bold shadow-2xl text-sm border text-center min-w-[260px]"></div>
-
-    <!-- ヘッダー -->
-    <header class="bg-[#14100e] text-white sticky top-0 z-40 border-b border-[#3a2e28] shadow-lg py-2.5">
-        <div class="max-w-5xl mx-auto px-4 flex justify-between items-center gap-2">
-            <h1 class="text-2xl font-extrabold tracking-wider text-[#d4a359] flex items-center gap-2 cursor-pointer" onclick="switchTab('dashboard')">
-                <span>⚪</span> 数学マスター (円の方程式)
-            </h1>
-            <nav class="flex gap-1.5 sm:gap-2 font-bold text-sm">
-                <button onclick="switchTab('dashboard')" data-target="dashboard" class="nav-link bg-[#261e1b] border border-[#4a3b34] text-[#a3958c] hover:text-[#d4a359] hover:border-[#d4a359] px-3 py-1.5 rounded-lg transition-all shadow-sm">学習記録</button>
-                <button onclick="switchTab('summary')" data-target="summary" class="nav-link bg-[#261e1b] border border-[#4a3b34] text-[#a3958c] hover:text-[#d4a359] hover:border-[#d4a359] px-3 py-1.5 rounded-lg transition-all shadow-sm">要点のまとめ</button>
-                <button onclick="switchTab('settings')" data-target="settings" class="nav-link bg-[#261e1b] border border-[#4a3b34] text-[#a3958c] hover:text-[#d4a359] hover:border-[#d4a359] px-3 py-1.5 rounded-lg transition-all shadow-sm">設定</button>
-            </nav>
+<div class="quiz-container" id="main-container">
+  
+  <!-- 0. ユーザー情報入力画面 -->
+  <div id="user-info-box">
+    <div class="app-title">📝 初期設定</div>
+    <div class="app-subtitle">学習を開始する前に名前を入力してください</div>
+    
+    <form class="user-info-form" onsubmit="saveUserInfo(event)">
+      <div class="form-group-inline">
+        <div>
+          <label for="input-grade">年</label>
+          <select id="input-grade" required>
+            <option value="">選択</option>
+          </select>
         </div>
-    </header>
-
-    <!-- メインコンテンツ -->
-    <main class="max-w-5xl mx-auto px-4 py-4 flex-1 w-full space-y-4">
-
-        <!-- TAB 1: 学習記録 -->
-        <section id="tab-dashboard" class="tab-content space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="glass-card p-4 rounded-xl shadow-md flex flex-col justify-between">
-                    <span class="text-xs text-[#a3958c] font-bold uppercase tracking-wider">学習者情報</span>
-                    <div class="mt-2 flex items-baseline justify-between">
-                        <span id="dash-user-info" class="text-lg font-extrabold text-[#f5f2eb]">未入力</span>
-                        <button onclick="switchTab('settings')" class="text-xs text-[#d4a359] underline hover:text-[#e5b873] font-bold">変更</button>
-                    </div>
-                    <p class="text-xs text-[#7d6e65] mt-1">学年・組・番号・名前</p>
-                </div>
-
-                <div class="glass-card p-4 rounded-xl shadow-md flex flex-col justify-between">
-                    <span class="text-xs text-[#a3958c] font-bold uppercase tracking-wider">全体の正答率</span>
-                    <div class="mt-2 flex items-baseline justify-between">
-                        <span id="total-accuracy-text" class="text-3xl font-extrabold text-[#d4a359]">0%</span>
-                        <span id="total-correct-count" class="text-xs text-[#a3958c] font-bold">0 / 0 問 正解</span>
-                    </div>
-                    <p class="text-xs text-[#7d6e65] mt-1">1問一答での累計スコア</p>
-                </div>
-
-                <div class="glass-card p-4 rounded-xl shadow-md flex flex-col justify-between">
-                    <span class="text-xs text-[#a3958c] font-bold uppercase tracking-wider">解答状況</span>
-                    <div class="mt-2 flex items-baseline justify-between">
-                        <span id="total-attempted-text" class="text-2xl font-bold text-[#e6ded8]">0 / 0 問</span>
-                        <span id="status-badge" class="text-xs text-[#a3958c] font-bold">未着手</span>
-                    </div>
-                    <p class="text-xs text-[#7d6e65] mt-1">挑戦した問題の数</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
-                <div class="lg:col-span-2 glass-card p-4 rounded-xl shadow-md">
-                    <h3 class="font-bold text-sm text-[#e6ded8] mb-3 flex items-center gap-2">
-                        <span>📈</span> 大問別正答率（％）
-                    </h3>
-                    <div class="h-52 w-full">
-                        <canvas id="accuracyChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-3 glass-card p-4 rounded-xl shadow-md overflow-hidden flex flex-col">
-                    <h3 class="font-bold text-sm text-[#e6ded8] mb-3 flex items-center gap-2">
-                        <span>📋</span> 大問別学習状況（タップして問題を解く）
-                    </h3>
-                    <div class="overflow-y-auto max-h-52 pr-1 flex-1">
-                        <table class="w-full text-left text-sm">
-                            <thead class="text-xs text-[#a3958c] border-b border-[#3a2e28] sticky top-0 bg-[#261e1b]">
-                                <tr>
-                                    <th class="pb-2 font-medium">大問名</th>
-                                    <th class="pb-2 text-center font-medium">正解数</th>
-                                    <th class="pb-2 text-right font-medium pr-1">正解率</th>
-                                </tr>
-                            </thead>
-                            <tbody id="table-category-summary" class="divide-y divide-[#332722]"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 復習ノート -->
-            <div class="glass-card p-4 rounded-xl shadow-md space-y-3">
-                <div class="flex justify-between items-center border-b border-[#3a2e28] pb-2">
-                    <h3 class="font-bold text-sm text-[#f08c8c] flex items-center gap-2">
-                        <span>🔍</span> 復習ノート（間違えた問題と解説）
-                    </h3>
-                    <span id="incorrect-count-badge" class="text-xs bg-[#4a1f1d] text-[#f8b4b4] border border-[#6b2c2a] px-2.5 py-1 rounded-full font-bold">0問の要復習問題</span>
-                </div>
-                <div id="incorrect-questions-list" class="space-y-3 max-h-60 overflow-y-auto pr-1"></div>
-            </div>
-        </section>
-
-        <!-- 問題解答エリア -->
-        <section id="tab-solver" class="tab-content hidden space-y-4">
-            <div id="unit-detail-view" class="space-y-4">
-                <div class="flex flex-wrap items-center justify-between border-b border-[#3a2e28] pb-3 gap-2">
-                    <button onclick="switchTab('dashboard')" class="text-sm font-bold text-[#e6ded8] bg-[#2a211d] border border-[#4a3b34] px-3 py-1.5 rounded-lg hover:bg-[#382d27] transition-colors flex items-center gap-1 shadow-sm">
-                        ← 学習記録へ戻る
-                    </button>
-                    
-                    <div class="flex items-center gap-2">
-                        <div id="question-progress-badge" class="text-sm font-bold bg-[#14100e] text-[#d4a359] border border-[#3a2e28] px-3 py-1.5 rounded-lg">1 / 3 問</div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                    <div class="lg:col-span-7 space-y-4">
-                        <div class="glass-card p-5 rounded-xl shadow-md space-y-4">
-                            <div class="flex justify-between items-center">
-                                <h4 id="question-title-text" class="text-xs font-bold text-[#d4a359] tracking-wider uppercase"></h4>
-                                <button onclick="toggleHint()" class="text-xs font-bold text-[#d4a359] bg-[#3a2d24] hover:bg-[#48382c] border border-[#634e3e] px-3 py-1 rounded-full">💡 ヒント</button>
-                            </div>
-                            
-                            <div id="question-hint-box" class="hidden text-xs text-[#e5cda8] bg-[#2e231b] p-3 rounded-lg border border-[#523f30]">
-                                <span class="font-bold">💡 ヒント:</span> <span id="question-hint-text"></span>
-                            </div>
-
-                            <div class="bg-[#191311] p-4 rounded-xl border border-[#382a23] text-center py-6 shadow-inner">
-                                <div id="question-body-display" class="text-xl font-bold text-[#f5f2eb] leading-relaxed"></div>
-                            </div>
-
-                            <div class="bg-[#1e1714] p-4 rounded-xl border border-[#3a2b23] flex flex-col items-center justify-center min-h-[100px]">
-                                <span class="text-xs text-[#a3958c] font-bold mb-2">解答入力枠 (各枠をタップして右側のテンキーで入力)</span>
-                                <div id="answer-input-container" class="flex flex-col items-center gap-3 w-full"></div>
-                            </div>
-
-                            <div id="question-result-status" class="text-center text-lg font-bold min-h-[28px]"></div>
-
-                            <div id="question-exp-box" class="hidden pt-3 border-t border-[#3a2e28] space-y-2">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs font-bold bg-[#382b24] text-[#d4a359] px-2 py-0.5 rounded border border-[#523f31]">正解</span>
-                                    <span id="question-correct-ans" class="text-sm font-mono font-bold text-[#f5f2eb]"></span>
-                                </div>
-                                <div class="text-xs text-[#d9ceb8] bg-[#211a17] p-3 rounded-lg border border-[#382b24]">
-                                    <span class="font-bold text-[#d4a359]">📝 解説:</span> <span id="question-exp-text"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ソフトテンキー -->
-                    <div class="lg:col-span-5">
-                        <div class="glass-card p-4 rounded-xl shadow-md space-y-3 sticky top-16">
-                            <div class="flex justify-between items-center border-b border-[#3a2e28] pb-2">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs font-bold text-[#d9ceb8]">ソフトテンキー</span>
-                                    <span id="mode-indicator" class="text-[10px] bg-[#d4a359] text-[#1f1917] font-bold px-1.5 py-0.5 rounded hidden">累乗モード</span>
-                                </div>
-                                <div class="flex gap-1.5">
-                                    <button onclick="keypadBackspace()" class="text-xs bg-[#3d211d] text-[#f08c8c] border border-[#59302b] px-2.5 py-1 rounded font-bold hover:bg-[#4f2a25]">⌫ (削除)</button>
-                                    <button onclick="keypadClear()" class="text-xs bg-[#4a1f1d] text-[#f8b4b4] border border-[#6b2c2a] px-2.5 py-1 rounded font-bold hover:bg-[#5c2725]">AC (全消去)</button>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-4 gap-2 text-center font-mono font-bold text-base">
-                                <button onclick="keypadPress('7')" class="bg-[#2e241f] text-[#f5f2eb] py-2 rounded-lg border border-[#45362e] hover:bg-[#3d3029]">7</button>
-                                <button onclick="keypadPress('8')" class="bg-[#2e241f] text-[#f5f2eb] py-2 rounded-lg border border-[#45362e] hover:bg-[#3d3029]">8</button>
-                                <button onclick="keypadPress('9')" class="bg-[#2e241f] text-[#f5f2eb] py-2 rounded-lg border border-[#45362e] hover:bg-[#3d3029]">9</button>
-                                <button onclick="keypadPress('+')" class="bg-[#3a2a1d] text-[#e8b87d] py-2 rounded-lg border border-[#523b28] hover:bg-[#4a3625]">+</button>
-
-                                <button onclick="keypadPress('4')" class="bg-[#2e241f] text-[#f5f2eb] py-2 rounded-lg border border-[#45362e] hover:bg-[#3d3029]">4</button>
-                                <button onclick="keypadPress('5')" class="bg-[#2e241f] text-[#f5f2eb] py-2 rounded-lg border border-[#45362e] hover:bg-[#3d3029]">5</button>
-                                <button onclick="keypadPress('6')" class="bg-[#2e241f] text-[#f5f2eb] py-2 rounded-lg border border-[#45362e] hover:bg-[#3d3029]">6</button>
-                                <button onclick="keypadPress('-')" class="bg-[#3a2a1d] text-[#e8b87d] py-2 rounded-lg border border-[#523b28] hover:bg-[#4a3625]">-</button>
-
-                                <button onclick="keypadPress('1')" class="bg-[#2e241f] text-[#f5f2eb] py-2 rounded-lg border border-[#45362e] hover:bg-[#3d3029]">1</button>
-                                <button onclick="keypadPress('2')" class="bg-[#2e241f] text-[#f5f2eb] py-2 rounded-lg border border-[#45362e] hover:bg-[#3d3029]">2</button>
-                                <button onclick="keypadPress('3')" class="bg-[#2e241f] text-[#f5f2eb] py-2 rounded-lg border border-[#45362e] hover:bg-[#3d3029]">3</button>
-                                <button onclick="keypadPress('±')" class="bg-[#3a2a1d] text-[#e8b87d] py-2 rounded-lg border border-[#523b28] hover:bg-[#4a3625]">±</button>
-
-                                <button onclick="keypadPress('0')" class="bg-[#2e241f] text-[#f5f2eb] py-2 rounded-lg border border-[#45362e] hover:bg-[#3d3029]">0</button>
-                                <button onclick="keypadPress('.')" class="bg-[#2e241f] text-[#f5f2eb] py-2 rounded-lg border border-[#45362e] hover:bg-[#3d3029]">.</button>
-                                <button onclick="keypadPress('√')" class="bg-[#3a2a1d] text-[#e8b87d] py-2 rounded-lg border border-[#523b28] hover:bg-[#4a3625]">√</button>
-                                <button onclick="toggleFractionMode()" id="btn-frac-toggle" class="bg-[#3a2a1d] text-[#e8b87d] py-2 rounded-lg border border-[#523b28] text-xs hover:bg-[#4a3625]">／(分数)</button>
-
-                                <button onclick="keypadPress('x')" class="bg-[#251d19] text-[#d4a359] py-2 rounded-lg border border-[#3b2e27] hover:bg-[#332721] italic">x</button>
-                                <button onclick="keypadPress('y')" class="bg-[#251d19] text-[#d4a359] py-2 rounded-lg border border-[#3b2e27] hover:bg-[#332721] italic">y</button>
-                                <button onclick="keypadPress('=')" class="bg-[#251d19] text-[#c9bea7] py-2 rounded-lg border border-[#3b2e27] hover:bg-[#332721]">=</button>
-                                <button id="btn-power-toggle" onclick="toggleSuperscriptMode()" class="bg-[#3a2a1d] text-[#e8b87d] py-2 rounded-lg border border-[#523b28] text-xs hover:bg-[#4a3625]">
-                                    <span id="power-btn-label">□<sup>□</sup>(累乗)</span>
-                                </button>
-
-                                <button onclick="keypadPress(',')" class="bg-[#251d19] text-[#c9bea7] py-2 rounded-lg border border-[#3b2e27] hover:bg-[#332721]">,</button>
-                                <button onclick="keypadPress('、')" class="bg-[#251d19] text-[#c9bea7] py-2 rounded-lg border border-[#3b2e27] hover:bg-[#332721]">、</button>
-                                <button onclick="keypadPress('(')" class="bg-[#3a2a1d] text-[#e8b87d] py-2 rounded-lg border border-[#523b28] hover:bg-[#4a3625]">(</button>
-                                <button onclick="keypadPress(')')" class="bg-[#3a2a1d] text-[#e8b87d] py-2 rounded-lg border border-[#523b28] hover:bg-[#4a3625]">)</button>
-                            </div>
-
-                            <div class="flex gap-2 mt-3">
-                                <button onclick="checkCurrentQuestion()" class="flex-1 py-3 bg-[#d4a359] text-[#1a1412] font-extrabold rounded-lg hover:bg-[#e5b873] shadow-md text-base">判定する</button>
-                                <button id="btn-next-q" onclick="handleNextButtonClick()" class="w-1/3 py-3 font-bold bg-[#2a211d] border border-[#4a3b34] text-[#e6ded8] rounded-lg hover:bg-[#382d27] transition-colors text-sm">次の問 ➡</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- TAB 2: 要点のまとめ -->
-        <section id="tab-summary" class="tab-content hidden space-y-4">
-            <h2 class="text-xl font-bold text-[#f5f2eb]">📚 円の方程式・要点まとめ</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="glass-card p-4 rounded-xl space-y-2 border-l-4 border-l-[#d4a359]">
-                    <h3 class="font-bold text-sm text-[#d4a359]">1. 原点を中心とする円</h3>
-                    <p class="text-xs text-[#d9ceb8] leading-relaxed">
-                        原点 O(0, 0) を中心とし、半径が r の円の方程式は<br>
-                        <span class="font-bold text-[#f5f2eb]">x<sup>2</sup> + y<sup>2</sup> = r<sup>2</sup></span>
-                    </p>
-                </div>
-
-                <div class="glass-card p-4 rounded-xl space-y-2 border-l-4 border-l-[#d4a359]">
-                    <h3 class="font-bold text-sm text-[#d4a359]">2. 点(a, b)を中心とする円</h3>
-                    <p class="text-xs text-[#d9ceb8] leading-relaxed">
-                        点 (a, b) を中心とし、半径が r の円の方程式は<br>
-                        <span class="font-bold text-[#f5f2eb]">(x - a)<sup>2</sup> + (y - b)<sup>2</sup> = r<sup>2</sup></span>
-                    </p>
-                </div>
-
-                <div class="glass-card p-4 rounded-xl space-y-2 border-l-4 border-l-[#d4a359]">
-                    <h3 class="font-bold text-sm text-[#d4a359]">3. 方程式から中心と半径を求める</h3>
-                    <p class="text-xs text-[#d9ceb8] leading-relaxed">
-                        ・(x - 2)<sup>2</sup> + (y - 4)<sup>2</sup> = 9 ➔ 中心 (2, 4), 半径 3 (√9)<br>
-                        ・(x - 3)<sup>2</sup> + (y + 2)<sup>2</sup> = 10 ➔ 中心 (3, -2), 半径 √10
-                    </p>
-                </div>
-
-                <div class="glass-card p-4 rounded-xl space-y-2 border-l-4 border-l-[#d4a359]">
-                    <h3 class="font-bold text-sm text-[#d4a359]">4. 入力のポイント</h3>
-                    <p class="text-xs text-[#d9ceb8] leading-relaxed">
-                        ・大問2〜3では中心のx座標・y座標、半径の枠を選択して数値を入力します。<br>
-                        ・√を使う場合はソフトテンキーの「√」ボタンを押してください。
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- TAB 3: 設定 -->
-        <section id="tab-settings" class="tab-content hidden max-w-xl mx-auto space-y-4">
-            <div class="glass-card p-5 rounded-xl space-y-5">
-                <div>
-                    <h3 class="font-bold text-sm mb-3 text-[#d4a359]">学習者情報の設定</h3>
-                    <div class="grid grid-cols-3 gap-3 mb-3">
-                        <div>
-                            <label class="text-xs text-[#a3958c]">学年</label>
-                            <input type="text" id="user-grade-input" placeholder="例: 2" class="w-full px-3 py-2 border border-[#4a3b34] rounded-lg text-sm bg-[#1a1412] font-bold">
-                        </div>
-                        <div>
-                            <label class="text-xs text-[#a3958c]">組</label>
-                            <input type="text" id="user-class-input" placeholder="例: 1" class="w-full px-3 py-2 border border-[#4a3b34] rounded-lg text-sm bg-[#1a1412] font-bold">
-                        </div>
-                        <div>
-                            <label class="text-xs text-[#a3958c]">出席番号</label>
-                            <input type="text" id="user-num-input" placeholder="例: 15" class="w-full px-3 py-2 border border-[#4a3b34] rounded-lg text-sm bg-[#1a1412] font-bold">
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="text-xs text-[#a3958c]">氏名</label>
-                        <input type="text" id="user-name-input" placeholder="例：山田 太郎" class="w-full px-3 py-2 border border-[#4a3b34] rounded-lg text-sm bg-[#1a1412] font-bold">
-                    </div>
-                    <button onclick="saveUserInfo()" class="w-full bg-[#d4a359] text-[#1a1412] font-extrabold px-4 py-2.5 rounded-lg hover:bg-[#e5b873] transition-colors text-sm">💾 情報を保存</button>
-                </div>
-                <div class="border-t border-[#3a2e28] pt-4">
-                    <h3 class="font-bold text-sm mb-2">成績データの送信</h3>
-                    <button id="btn-send-data" onclick="sendOverallDataToSpreadsheet()" class="w-full bg-[#d4a359] text-[#1a1412] font-extrabold px-4 py-2.5 rounded-lg hover:bg-[#e5b873] text-sm">📤 成績データを送信する</button>
-                </div>
-                <div class="border-t border-[#3a2e28] pt-4">
-                    <h3 class="font-bold text-sm mb-2">成績・回答履歴のリセット</h3>
-                    <button onclick="resetProgress()" class="w-full bg-[#4a1f1d] text-[#f8b4b4] border border-[#6b2c2a] font-extrabold px-4 py-2.5 rounded-lg hover:bg-[#5c2725] text-sm">🔄 成績・回答履歴をリセットする</button>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <script>
-        const FIXED_API_URL = "https://script.google.com/macros/s/AKfycbw2dhmlrYCGx2aW7H6KNk05vrZK0fjdoKunDH4ifHLaE2efa52Krtog1_t-1IOmwmpN/exec";
-
-        // データベース（練習6を大問3として定義）
-        const db = [
-            { 
-                id: 1, 
-                title: "大問1：円の方程式を求める", 
-                type: "equation",
-                questions: [
-                    { 
-                        q: "中心が点 (2, 1), 半径が 3 の円の方程式を求めなさい。", 
-                        a: "(x-2)^2+(y-1)^2=9", 
-                        altA: "(x-2)^2+(y-1)^2=3^2", 
-                        hint: "(x-a)^2 + (y-b)^2 = r^2 の公式に a=2, b=1, r=3 を代入します。", 
-                        exp: "(x - 2)^2 + (y - 1)^2 = 3^2 より、(x - 2)^2 + (y - 1)^2 = 9" 
-                    },
-                    { 
-                        q: "中心が点 (-1, 3), 半径が 5 の円の方程式を求めなさい。", 
-                        a: "(x+1)^2+(y-3)^2=25", 
-                        altA: "(x+1)^2+(y-3)^2=5^2", 
-                        hint: "a=-1, b=3, r=5 です。x - (-1) は x + 1 になります。", 
-                        exp: "{x - (-1)}^2 + (y - 3)^2 = 5^2 より、(x + 1)^2 + (y - 3)^2 = 25" 
-                    },
-                    { 
-                        q: "中心が原点, 半径が √2 の円の方程式を求めなさい。", 
-                        a: "x^2+y^2=2", 
-                        altA: "x^2+y^2=(√2)^2", 
-                        hint: "原点中心なので x^2 + y^2 = r^2 を使います。(√2)^2 = 2 です。", 
-                        exp: "x^2 + y^2 = (√2)^2 より、x^2 + y^2 = 2" 
-                    }
-                ]
-            },
-            { 
-                id: 2, 
-                title: "大問2：方程式が表す図形（中心と半径）", 
-                type: "center_radius",
-                questions: [
-                    { 
-                        q: "方程式 x^2 + y^2 = 4 はどのような図形を表しますか。", 
-                        cx: "0", cy: "0", r: "2",
-                        hint: "原点 (0, 0) が中心です。r^2 = 4 なので r = 2 となります。", 
-                        exp: "中心 (0, 0), 半径 2 の円を表します。" 
-                    },
-                    { 
-                        q: "方程式 x^2 + (y - 1)^2 = 36 はどのような図形を表しますか。", 
-                        cx: "0", cy: "1", r: "6",
-                        hint: "(x - 0)^2 + (y - 1)^2 = 6^2 と変形して考えます。", 
-                        exp: "中心 (0, 1), 半径 6 の円を表します。" 
-                    },
-                    { 
-                        q: "方程式 (x - 2)^2 + (y - 4)^2 = 9 はどのような図形を表しますか。", 
-                        cx: "2", cy: "4", r: "3",
-                        hint: "a=2, b=4, r^2=9 ➔ r=3 です。", 
-                        exp: "中心 (2, 4), 半径 3 の円を表します。" 
-                    },
-                    { 
-                        q: "方程式 (x - 3)^2 + (y + 2)^2 = 10 はどのような図形を表しますか。", 
-                        cx: "3", cy: "-2", r: "√10",
-                        hint: "y + 2 は y - (-2) なので y 座標は -2 です。半径は √10 です。", 
-                        exp: "中心 (3, -2), 半径 √10 の円を表します。" 
-                    }
-                ]
-            },
-            { 
-                id: 3, 
-                title: "大問3：方程式が表す図形", 
-                type: "center_radius",
-                questions: [
-                    { 
-                        q: "(1) 方程式 x^2 + y^2 - 2x = 0 はどのような図形を表しますか。", 
-                        cx: "1", cy: "0", r: "1",
-                        hint: "(x - 1)^2 - 1 + y^2 = 0 ➔ (x - 1)^2 + y^2 = 1^2", 
-                        exp: "(x - 1)^2 + y^2 = 1 より、中心 (1, 0), 半径 1 の円を表します。" 
-                    },
-                    { 
-                        q: "(2) 方程式 x^2 + y^2 - 6x - 8y = 0 はどのような図形を表しますか。", 
-                        cx: "3", cy: "4", r: "5",
-                        hint: "(x - 3)^2 - 9 + (y - 4)^2 - 16 = 0 ➔ (x - 3)^2 + (y - 4)^2 = 25", 
-                        exp: "(x - 3)^2 + (y - 4)^2 = 25 より、中心 (3, 4), 半径 5 の円を表します。" 
-                    },
-                    { 
-                        q: "(3) 方程式 x^2 + y^2 + 4x - 2y - 5 = 0 はどのような図形を表しますか。", 
-                        cx: "-2", cy: "1", r: "√10",
-                        hint: "(x + 2)^2 - 4 + (y - 1)^2 - 1 - 5 = 0 ➔ (x + 2)^2 + (y - 1)^2 = 10", 
-                        exp: "(x + 2)^2 + (y - 1)^2 = 10 より、中心 (-2, 1), 半径 √10 の円を表します。" 
-                    }
-                ]
-            }
-        ];
-
-        function getTotalQuestionsCount() {
-            return db.reduce((sum, cat) => sum + cat.questions.length, 0);
-        }
-
-        let userAnswers = {};
-        let userName = "", userGrade = "", userClass = "", userNum = "";
-        let currentCatId = 1, currentQIndex = 0, activeTargetId = null, accuracyChart = null;
-        let isFractionInputMode = false, isSuperscriptMode = false;
-        let isRetryFromNotebook = false;
-
-        let inputRawData = {
-            'input-single': '',
-            'input-num': '',
-            'input-den': '',
-            'input-cx': '',
-            'input-cy': '',
-            'input-r': ''
-        };
-
-        const superMap = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','+':'⁺','-':'⁻'};
-
-        let toastTimer = null;
-        function showToast(msg, isError = false) {
-            const toast = document.getElementById('toast-msg');
-            if (!toast) return;
-            clearTimeout(toastTimer);
-            toast.innerText = msg;
-            toast.style.backgroundColor = isError ? '#4a1f1d' : '#d4a359';
-            toast.style.color = isError ? '#f8b4b4' : '#1a1412';
-            toast.style.borderColor = isError ? '#6b2c2a' : '#e5b873';
-
-            toast.style.display = 'block';
-            setTimeout(() => {
-                toast.style.opacity = '1';
-                toast.style.transform = 'translate(-50%, 0)';
-            }, 10);
-
-            toastTimer = setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translate(-50%, -10px)';
-                setTimeout(() => { toast.style.display = 'none'; }, 300);
-            }, 3000);
-        }
-
-        window.onload = () => {
-            loadProgress();
-            initCharts();
-            renderTable();
-            updateDashboardStats();
-
-            userName = (localStorage.getItem('math_circle_user_name') || "").trim();
-            userGrade = (localStorage.getItem('math_circle_user_grade') || "").trim();
-            userClass = (localStorage.getItem('math_circle_user_class') || "").trim();
-            userNum = (localStorage.getItem('math_circle_user_num') || "").trim();
-
-            if (document.getElementById('user-name-input')) document.getElementById('user-name-input').value = userName;
-            if (document.getElementById('user-grade-input')) document.getElementById('user-grade-input').value = userGrade;
-            if (document.getElementById('user-class-input')) document.getElementById('user-class-input').value = userClass;
-            if (document.getElementById('user-num-input')) document.getElementById('user-num-input').value = userNum;
-
-            updateNameDisplay();
-
-            if (!userName || !userGrade || !userClass || !userNum) {
-                switchTab('settings');
-                showToast("学年・組・番号・名前を入力してください", true);
-            }
-        };
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            
-            const targetEl = document.getElementById(`tab-${tabId}`);
-            if(targetEl) targetEl.classList.remove('hidden');
-            
-            document.querySelectorAll('.nav-link').forEach(l => {
-                if (l.dataset.target === tabId) {
-                    l.classList.add('text-[#d4a359]', 'border-[#d4a359]', 'bg-[#382d27]');
-                    l.classList.remove('text-[#a3958c]', 'border-[#4a3b34]', 'bg-[#261e1b]');
-                } else {
-                    l.classList.remove('text-[#d4a359]', 'border-[#d4a359]', 'bg-[#382d27]');
-                    l.classList.add('text-[#a3958c]', 'border-[#4a3b34]', 'bg-[#261e1b]');
-                }
-            });
-
-            if (tabId === 'dashboard') updateDashboardStats();
-        }
-
-        function initCharts() {
-            const canvas = document.getElementById('accuracyChart');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            accuracyChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: db.map(i => i.title.split('：')[0]),
-                    datasets: [{ label: '正解率 (%)', data: db.map(cat => calculateCategoryAccuracy(cat.id)), backgroundColor: '#d4a359', borderRadius: 4 }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, max: 100, ticks: { color: '#a3958c', stepSize: 20, callback: v => v + '%' }, grid: { color: '#3a2e28' } },
-                        x: { ticks: { color: '#a3958c', font: { size: 10 } }, grid: { display: false } }
-                    }
-                }
-            });
-        }
-
-        function calculateCategoryAccuracy(catId) {
-            const cat = db.find(c => c.id === catId);
-            if (!cat || cat.questions.length === 0) return 0;
-            let correct = 0;
-            cat.questions.forEach((_, idx) => {
-                if (userAnswers[`${catId}-${idx}`]?.isCorrect) correct++;
-            });
-            return Math.round((correct / cat.questions.length) * 100);
-        }
-
-        function updateDashboardStats() {
-            let totalCorrect = 0, totalAttempted = 0;
-            const totalQuestions = getTotalQuestionsCount();
-
-            Object.values(userAnswers).forEach(item => {
-                if (item) {
-                    totalAttempted++;
-                    if (item.isCorrect) totalCorrect++;
-                }
-            });
-            const overallRate = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
-
-            document.getElementById('total-accuracy-text').innerText = `${overallRate}%`;
-            document.getElementById('total-correct-count').innerText = `${totalCorrect} / ${totalQuestions} 問 正解`;
-            document.getElementById('total-attempted-text').innerText = `${totalAttempted} / ${totalQuestions} 問`;
-
-            const badgeEl = document.getElementById('status-badge');
-            if (badgeEl) {
-                if (totalAttempted === 0) { badgeEl.innerText = "未着手"; badgeEl.className = "text-xs text-[#a3958c] font-bold"; }
-                else if (totalAttempted < totalQuestions) { badgeEl.innerText = "学習中"; badgeEl.className = "text-xs text-[#82b882] font-bold"; }
-                else { badgeEl.innerText = "全問完了"; badgeEl.className = "text-xs text-[#d4a359] font-bold"; }
-            }
-
-            if (accuracyChart) {
-                accuracyChart.data.datasets[0].data = db.map(cat => calculateCategoryAccuracy(cat.id));
-                accuracyChart.update();
-            }
-            renderTable();
-            renderIncorrectList();
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById('table-category-summary');
-            if (!tbody) return;
-            tbody.innerHTML = db.map(cat => {
-                let correct = 0;
-                cat.questions.forEach((_, idx) => {
-                    if (userAnswers[`${cat.id}-${idx}`]?.isCorrect) correct++;
-                });
-                const rate = cat.questions.length > 0 ? Math.round((correct / cat.questions.length) * 100) : 0;
-                return `
-                    <tr onclick="startQuestion(${cat.id}, 0, false)" class="border-b border-[#3a2e28] hover:bg-[#382d27] cursor-pointer transition-colors group">
-                        <td class="py-3 font-medium text-[#e6ded8] group-hover:text-[#d4a359]">${cat.title}</td>
-                        <td class="py-3 text-center font-bold text-[#c9bea7]">${correct} / ${cat.questions.length}</td>
-                        <td class="py-3 text-right font-bold pr-1 ${rate > 0 ? 'text-[#d4a359]' : 'text-[#7d6e65]'}">${rate}%</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function startQuestion(catId, qIdx = 0, isFromNotebook = false) {
-            currentCatId = catId;
-            currentQIndex = qIdx;
-            isRetryFromNotebook = isFromNotebook;
-            
-            switchTab('solver');
-            renderSingleQuestion();
-        }
-
-        function renderIncorrectList() {
-            const container = document.getElementById('incorrect-questions-list');
-            const badge = document.getElementById('incorrect-count-badge');
-            if (!container) return;
-            let incorrectItems = [];
-
-            db.forEach(cat => {
-                cat.questions.forEach((q, qIdx) => {
-                    const ansData = userAnswers[`${cat.id}-${qIdx}`];
-                    if (ansData && !ansData.isCorrect) {
-                        const correctStr = cat.type === 'center_radius' 
-                            ? `中心(${q.cx}, ${q.cy}), 半径${q.r}` 
-                            : q.a;
-                        incorrectItems.push({ catId: cat.id, qIdx: qIdx, catTitle: cat.title, qText: q.q, correctAns: correctStr, exp: q.exp });
-                    }
-                });
-            });
-
-            if (badge) badge.innerText = `${incorrectItems.length}問の要復習問題`;
-            if (incorrectItems.length === 0) {
-                container.innerHTML = `<div class="text-xs text-[#a3958c] py-3 text-center">現在、間違えた問題はありません！</div>`;
-                return;
-            }
-
-            container.innerHTML = incorrectItems.map(item => `
-                <div class="p-3 bg-[#191311] border border-[#3a2b23] rounded-lg space-y-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs bg-[#3a2d24] text-[#d4a359] px-2 py-0.5 rounded font-bold">${item.catTitle}</span>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs text-[#a3958c]">正解: <span class="font-mono text-[#d4a359] font-bold">${formatMath(item.correctAns)}</span></span>
-                            <button onclick="startQuestion(${item.catId}, ${item.qIdx}, true)" class="text-xs font-bold bg-[#d4a359] text-[#1a1412] px-2.5 py-1 rounded hover:bg-[#e5b873] transition-colors">
-                                ✏️ この問題を解く
-                            </button>
-                        </div>
-                    </div>
-                    <div class="text-sm font-bold text-[#f5f2eb]">${formatMath(item.qText)}</div>
-                    <div class="text-xs text-[#d9ceb8] bg-[#211a17] p-2 rounded border border-[#382b24]">
-                        <span class="font-bold text-[#d4a359]">解説:</span> ${formatMath(item.exp)}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderSingleQuestion() {
-            disableSuperscriptMode();
-            const cat = db.find(c => c.id === currentCatId);
-            if (!cat) return;
-            const questions = cat.questions;
-
-            if (currentQIndex >= questions.length) currentQIndex = 0;
-            const q = questions[currentQIndex];
-
-            const nextBtn = document.getElementById('btn-next-q');
-            if (nextBtn) {
-                if (isRetryFromNotebook) {
-                    nextBtn.innerText = "学習記録へ戻る";
-                } else {
-                    nextBtn.innerText = "次の問 ➡";
-                }
-            }
-
-            document.getElementById('question-progress-badge').innerText = `${currentQIndex + 1} / ${questions.length} 問`;
-            document.getElementById('question-title-text').innerText = `${cat.title} - (${currentQIndex + 1})`;
-            document.getElementById('question-body-display').innerHTML = formatMath(q.q);
-            document.getElementById('question-hint-text').innerText = formatMath(q.hint);
-            document.getElementById('question-hint-box').classList.add('hidden');
-
-            isFractionInputMode = false;
-            inputRawData = { 'input-single': '', 'input-num': '', 'input-den': '', 'input-cx': '', 'input-cy': '', 'input-r': '' };
-            renderInputContainer();
-
-            document.getElementById('question-result-status').innerText = '';
-            document.getElementById('question-exp-box').classList.add('hidden');
-        }
-
-        function handleNextButtonClick() {
-            if (isRetryFromNotebook) {
-                switchTab('dashboard');
-            } else {
-                navigateQuestion(1);
-            }
-        }
-
-        function renderInputContainer() {
-            const cat = db.find(c => c.id === currentCatId);
-            const inputContainer = document.getElementById('answer-input-container');
-
-            if (cat && cat.type === 'center_radius') {
-                inputContainer.innerHTML = `
-                    <div class="flex flex-col gap-3 items-center w-full max-w-sm">
-                        <div class="flex items-center gap-1.5 text-lg font-bold">
-                            <span class="text-[#d4a359]">中心</span>
-                            <span class="text-[#a3958c] text-xl font-mono">(</span>
-                            <div id="input-cx" onclick="setActiveTarget('input-cx')" class="formatted-input-box w-20 py-1 border-2 border-[#4a3b34] rounded-lg font-mono font-bold bg-[#261e1b] text-[#f5f2eb]"></div>
-                            <span class="text-[#a3958c] text-xl font-mono">,</span>
-                            <div id="input-cy" onclick="setActiveTarget('input-cy')" class="formatted-input-box w-20 py-1 border-2 border-[#4a3b34] rounded-lg font-mono font-bold bg-[#261e1b] text-[#f5f2eb]"></div>
-                            <span class="text-[#a3958c] text-xl font-mono">)</span>
-                        </div>
-                        <div class="flex items-center gap-2 text-lg font-bold">
-                            <span class="text-[#d4a359]">半径</span>
-                            <div id="input-r" onclick="setActiveTarget('input-r')" class="formatted-input-box w-28 py-1 border-2 border-[#4a3b34] rounded-lg font-mono font-bold bg-[#261e1b] text-[#f5f2eb]"></div>
-                        </div>
-                    </div>
-                `;
-                setActiveTarget('input-cx');
-            } else if (isFractionInputMode) {
-                inputContainer.innerHTML = `
-                    <div class="frac items-center text-lg font-bold">
-                        <div id="input-num" onclick="setActiveTarget('input-num')" class="formatted-input-box num w-36 py-1 border-b-2 border-[#d4a359] font-mono bg-[#261e1b] text-[#f5f2eb]"></div>
-                        <div id="input-den" onclick="setActiveTarget('input-den')" class="formatted-input-box den w-36 py-1 font-mono bg-[#261e1b] text-[#f5f2eb]"></div>
-                    </div>
-                `;
-                setActiveTarget('input-num');
-            } else {
-                inputContainer.innerHTML = `
-                    <div id="input-single" onclick="setActiveTarget('input-single')" class="formatted-input-box w-72 py-2 border-2 border-[#4a3b34] rounded-lg font-mono font-bold text-lg bg-[#261e1b] text-[#f5f2eb]"></div>
-                `;
-                setActiveTarget('input-single');
-            }
-            updateInputDisplays();
-        }
-
-        function renderInputDisplay(rawText) {
-            if (!rawText) return '<span class="text-[#66574d] font-normal text-xs">入力</span>';
-            return formatMath(rawText);
-        }
-
-        function updateInputDisplays() {
-            ['input-single', 'input-num', 'input-den', 'input-cx', 'input-cy', 'input-r'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.innerHTML = renderInputDisplay(inputRawData[id]);
-                }
-            });
-        }
-
-        function toggleFractionMode() { 
-            const cat = db.find(c => c.id === currentCatId);
-            if (cat && cat.type === 'center_radius') {
-                showToast("中心・半径の形式では分数切替は不要です");
-                return;
-            }
-            isFractionInputMode = !isFractionInputMode; 
-            renderInputContainer(); 
-        }
-
-        function toggleHint() { document.getElementById('question-hint-box')?.classList.toggle('hidden'); }
+        <div>
+          <label for="input-class">組</label>
+          <select id="input-class" required>
+            <option value="">選択</option>
+          </select>
+        </div>
+        <div>
+          <label for="input-number">番号</label>
+          <select id="input-number" required>
+            <option value="">選択</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label for="input-name">氏名</label>
+        <input type="text" id="input-name" placeholder="山田 太郎" required>
+      </div>
+      <button type="submit" class="btn-primary">学習を開始する</button>
+      <button type="button" class="btn-danger" onclick="resetAllData()">🔄 ユーザー情報・全解答履歴をリセット</button>
+    </form>
+  </div>
+
+  <!-- 1. メニュー画面 -->
+  <div id="menu-box" style="display: none;">
+    <div class="user-display-bar">
+      <span id="user-display-text"></span>
+      <button class="btn-edit-user" onclick="showUserInfoForm()">設定変更</button>
+    </div>
+    <div class="app-title">📚 数学トレーニング</div>
+    <div class="app-subtitle">挑戦したい問題セットを選択してください</div>
+    <div class="menu-list" id="menu-list-container"></div>
+  </div>
+
+  <!-- 2. クイズ画面（分割レイアウト対応） -->
+  <div id="quiz-box" style="display: none;">
+    <div class="quiz-header">
+      <div class="question-number" id="q-num">第 1 問</div>
+      <div class="header-controls">
+        <button class="btn-memo" id="memo-toggle-btn" onclick="toggleMemoLayout()">✏️ 計算メモを表示</button>
+        <button class="btn-small-menu" onclick="showMenu()">メニューに戻る</button>
+      </div>
+    </div>
+
+    <!-- 左右分割用ラッパー -->
+    <div class="split-wrapper">
+      <!-- 左側：問題・選択肢エリア -->
+      <div class="split-left">
+        <div class="question-title" id="q-title">問題の読み込み中...</div>
+        <div class="options-grid" id="options-container"></div>
         
-        function navigateQuestion(dir) {
-            const cat = db.find(c => c.id === currentCatId);
-            if (!cat) return;
-            const newIndex = currentQIndex + dir;
-            if (newIndex >= 0 && newIndex < cat.questions.length) {
-                currentQIndex = newIndex;
-                renderSingleQuestion();
-            } else if (newIndex >= cat.questions.length) {
-                showToast("大問の最後の問題です");
-            }
+        <div class="result-section" id="result-section">
+          <div class="result-header" id="result-text"></div>
+          <div class="explanation-box">
+            <div class="explanation-title">解説</div>
+            <div id="explanation-text"></div>
+          </div>
+          <button class="btn-primary" id="next-btn" onclick="nextQuestion()">次の問題へ</button>
+        </div>
+      </div>
+
+      <!-- 右側：計算ノートエリア（トグル表示） -->
+      <div class="split-right" id="memo-panel" style="display: none;">
+        <div class="memo-header">
+          <span class="memo-title">✏️ 計算スペース</span>
+        </div>
+        <div class="memo-toolbar">
+          <button id="tool-pen" class="active" onclick="setMemoMode('pen')">🖊️ ペン</button>
+          <button id="tool-eraser" onclick="setMemoMode('eraser')">🧹 消しゴム</button>
+          <label style="font-size: 12px;">色:
+            <input type="color" id="memo-color" value="#000000" onchange="updateMemoStyle()">
+          </label>
+          <label style="font-size: 12px;">太さ:
+            <select id="memo-size" onchange="updateMemoStyle()">
+              <option value="2">細い</option>
+              <option value="4" selected>普通</option>
+              <option value="8">太い</option>
+            </select>
+          </label>
+          <button onclick="clearMemoCanvas()" style="margin-left: auto; background-color: #f8d7da; color: #721c24;">🗑️ 全消去</button>
+        </div>
+        <div class="memo-canvas-wrapper" id="memo-canvas-wrapper">
+          <canvas id="memo-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 結果発表画面 -->
+  <div id="score-box" style="display: none;">
+    <h2 style="color: #2c3e50; margin-top: 0;" id="score-title">🎉 全問終了 🎉</h2>
+    <div id="score-text" style="font-size: 26px; font-weight: bold; color: #007bff; margin: 20px 0 10px 0;"></div>
+    <div id="accuracy-text" style="font-size: 22px; font-weight: bold; color: #28a745; margin-bottom: 10px;"></div>
+    <div id="details-text" style="font-size: 20px; font-weight: bold; color: #495057; margin-bottom: 20px; letter-spacing: 2px;"></div>
+    <div class="send-status" id="send-status">先生へデータを送信中...</div>
+
+    <div style="margin-top: 24px; max-width: 500px; margin-left: auto; margin-right: auto;">
+      <button class="btn-primary" onclick="restartQuiz()">もう一度解く</button>
+      <button class="btn-secondary" onclick="showMenu()">メニュー画面に戻る</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 最新のデプロイURL
+  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyGnkVZTzXDLqCpVtrBkc7Ygg_qFDfn2QYNhl7xztrAOrb3zTwitVRS7czGRm3O_EE/exec";
+
+  const quizSets = [
+    {
+      id: "set-circle-equations-original",
+      title: "【原典】円の方程式",
+      description: "教科書基本問題（全13問）",
+      isSimilar: false,
+      questions: [
+        {
+          text: "中心が点 $(2, 1)$ で半径が $3$ である円の方程式を求めよ。",
+          correct: "$(x - 2)^2 + (y - 1)^2 = 9$",
+          dummy: ["$(x + 2)^2 + (y + 1)^2 = 9$", "$(x - 2)^2 + (y - 1)^2 = 3$", "$(x + 2)^2 + (y + 1)^2 = 3$"],
+          explanation: "中心 $(a, b)$、半径 $r$ の円の方程式は $(x - a)^2 + (y - b)^2 = r^2$ です。<br>中心 $(2, 1)$、半径 $3$ を代入すると、<br>$(x - 2)^2 + (y - 1)^2 = 3^2 = 9$ となります。"
+        },
+        {
+          text: "中心が点 $(-2, 3)$ で半径が $\\sqrt{5}$ である円の方程式を求めよ。",
+          correct: "$(x + 2)^2 + (y - 3)^2 = 5$",
+          dummy: ["$(x - 2)^2 + (y + 3)^2 = 5$", "$(x + 2)^2 + (y - 3)^2 = \\sqrt{5}$", "$(x - 2)^2 + (y + 3)^2 = 25$"],
+          explanation: "中心 $(-2, 3)$、半径 $\\sqrt{5}$ を公式に代入します。<br>$(x - (-2))^2 + (y - 3)^2 = (\\sqrt{5})^2$<br>したがって、$(x + 2)^2 + (y - 3)^2 = 5$ となります。"
+        },
+        {
+          text: "中心が点 $(0, 3)$ で半径が $4$ である円の方程式を求めよ。",
+          correct: "$x^2 + (y - 3)^2 = 16$",
+          dummy: ["$(x - 3)^2 + y^2 = 16$", "$x^2 + (y + 3)^2 = 16$", "$x^2 + (y - 3)^2 = 4$"],
+          explanation: "中心 $(0, 3)$、半径 $4$ を公式に代入します。<br>$(x - 0)^2 + (y - 3)^2 = 4^2$<br>したがって、$x^2 + (y - 3)^2 = 16$ となります。"
+        },
+        {
+          text: "中心が原点で半径が $\\sqrt{3}$ である円の方程式を求めよ。",
+          correct: "$x^2 + y^2 = 3$",
+          dummy: ["$x^2 + y^2 = 9$", "$x^2 + y^2 = \\sqrt{3}$", "$(x - 1)^2 + (y - 1)^2 = 3$"],
+          explanation: "原点 $(0, 0)$ が中心で半径 $r$ の円の方程式は $x^2 + y^2 = r^2$ です。<br>半径 $\\sqrt{3}$ を代入すると、$x^2 + y^2 = (\\sqrt{3})^2 = 3$ となります。"
+        },
+        {
+          text: "方程式 $(x - 4)^2 + (y - 2)^2 = 25$ が表す円の中心の座標と半径を求めよ。",
+          correct: "中心 $(4, 2)$，半径 $5$",
+          dummy: ["中心 $(-4, -2)$，半径 $5$", "中心 $(4, 2)$，半径 $25$", "中心 $(-4, -2)$，半径 $25$"],
+          explanation: "標準形 $(x - a)^2 + (y - b)^2 = r^2$ と比較します。<br>$a = 4, b = 2, r^2 = 25$ より、$r = 5$ です。<br>したがって、中心は $(4, 2)$、半径は $5$ です。"
+        },
+        {
+          text: "方程式 $(x + 3)^2 + y^2 = 10$ が表す円の中心の座標と半径を求めよ。",
+          correct: "中心 $(-3, 0)$，半径 $\\sqrt{10}$",
+          dummy: ["中心 $(3, 0)$，半径 $\\sqrt{10}$", "中心 $(-3, 0)$，半径 $10$", "中心 $(3, 0)$，半径 $10$"],
+          explanation: "$(x - (-3))^2 + (y - 0)^2 = (\\sqrt{10})^2$ と変形できます。<br>したがって、中心は $(-3, 0)$、半径は $\\sqrt{10}$ です。"
+        },
+        {
+          text: "2点 $\\text{A}(4, 0)$, $\\text{B}(6, 2)$ を結ぶ線分を直径とする円について、中心の座標と半径を求めよ。",
+          correct: "中心 $(5, 1)$，半径 $\\sqrt{2}$",
+          dummy: ["中心 $(5, 1)$，半径 $2$", "中心 $(10, 2)$，半径 $\\sqrt{2}$", "中心 $(5, 1)$，半径 $2\\sqrt{2}$"],
+          explanation: "中心は線分 $\\text{AB}$ の中点なので、$\\left(\\frac{4+6}{2}, \\frac{0+2}{2}\\right) = (5, 1)$ です。<br>半径は中心 $(5, 1)$ と点 $\\text{A}(4, 0)$ の距離なので、$\\sqrt{(4-5)^2 + (0-1)^2} = \\sqrt{1+1} = \\sqrt{2}$ となります。"
+        },
+        {
+          text: "2点 $\\text{A}(4, 0)$, $\\text{B}(6, 2)$ を結ぶ線分を直径とする円の方程式を求めよ。",
+          correct: "$(x - 5)^2 + (y - 1)^2 = 2$",
+          dummy: ["$(x + 5)^2 + (y + 1)^2 = 2$", "$(x - 5)^2 + (y - 1)^2 = 4$", "$(x - 5)^2 + (y - 1)^2 = \\sqrt{2}$"],
+          explanation: "中心 $(5, 1)$、半径 $\\sqrt{2}$ より、方程式は $(x - 5)^2 + (y - 1)^2 = (\\sqrt{2})^2 = 2$ となります。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 - 2x - 4y + 1 = 0$ はどのような図形を表すか。",
+          correct: "中心 $(1, 2)$，半径 $2$ の円",
+          dummy: ["中心 $(-1, -2)$，半径 $2$ の円", "中心 $(1, 2)$，半径 $4$ の円", "中心 $(-1, -2)$，半径 $4$ の円"],
+          explanation: "平方完成します。<br>$(x^2 - 2x) + (y^2 - 4y) + 1 = 0$<br>$(x - 1)^2 - 1 + (y - 2)^2 - 4 + 1 = 0$<br>$(x - 1)^2 + (y - 2)^2 = 4$<br>したがって、中心 $(1, 2)$、半径 $2$ の円を表します。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 - 6x = 0$ はどのような図形を表すか。",
+          correct: "中心 $(3, 0)$，半径 $3$ の円",
+          dummy: ["中心 $(-3, 0)$，半径 $3$ の円", "中心 $(3, 0)$，半径 $9$ の円", "中心 $(0, 3)$，半径 $3$ の円"],
+          explanation: "平方完成します。<br>$(x^2 - 6x) + y^2 = 0$<br>$(x - 3)^2 - 9 + y^2 = 0$<br>$(x - 3)^2 + y^2 = 9$<br>したがって、中心 $(3, 0)$、半径 $3$ の円を表します。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 + 4x + 6y - 3 = 0$ はどのような図形を表すか。",
+          correct: "中心 $(-2, -3)$，半径 $4$ の円",
+          dummy: ["中心 $(2, 3)$，半径 $4$ の円", "中心 $(-2, -3)$，半径 $16$ の円", "中心 $(2, 3)$，半径 $16$ の円"],
+          explanation: "平方完成します。<br>$(x^2 + 4x) + (y^2 + 6y) - 3 = 0$<br>$(x + 2)^2 - 4 + (y + 3)^2 - 9 - 3 = 0$<br>$(x + 2)^2 + (y + 3)^2 = 16$<br>したがって、中心 $(-2, -3)$、半径 $4$ の円を表します。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 + 6x - 2y + 4 = 0$ はどのような図形を表すか。",
+          correct: "中心 $(-3, 1)$，半径 $\\sqrt{6}$ の円",
+          dummy: ["中心 $(3, -1)$，半径 $\\sqrt{6}$ の円", "中心 $(-3, 1)$，半径 $6$ の円", "中心 $(3, -1)$，半径 $6$ の円"],
+          explanation: "平方完成します。<br>$(x^2 + 6x) + (y^2 - 2y) + 4 = 0$<br>$(x + 3)^2 - 9 + (y - 1)^2 - 1 + 4 = 0$<br>$(x + 3)^2 + (y - 1)^2 = 6$<br>したがって、中心 $(-3, 1)$、半径 $\\sqrt{6}$ の円を表します。"
+        },
+        {
+          text: "3点 $\\text{A}(-2, 7)$, $\\text{B}(1, -2)$, $\\text{C}(5, 0)$ を通る円の方程式を求めよ。",
+          correct: "$x^2 + y^2 - 2x - 6y - 15 = 0$",
+          dummy: ["$x^2 + y^2 + 2x + 6y - 15 = 0$", "$x^2 + y^2 - 4x - 6y - 19 = 0$", "$x^2 + y^2 - 2x - 3y - 19 = 0$"],
+          explanation: "円の一般形 $x^2 + y^2 + lx + my + n = 0$ に3点を代入します。<br>点A: $4 + 49 - 2l + 7m + n = 0 \\Rightarrow -2l + 7m + n = -53$<br>点B: $1 + 4 + l - 2m + n = 0 \\Rightarrow l - 2m + n = -5$<br>点C: $25 + 0 + 5l + n = 0 \\Rightarrow 5l + n = -25$<br>これを解くと $l = -2, m = -6, n = -15$ となります。<br>よって方程式は $x^2 + y^2 - 2x - 6y - 15 = 0$ です。"
         }
-
-        function setActiveTarget(id) {
-            activeTargetId = id;
-            document.querySelectorAll('#answer-input-container .formatted-input-box').forEach(el => el.classList.remove('input-active'));
-            document.getElementById(id)?.classList.add('input-active');
+      ]
+    },
+    {
+      id: "set-circle-equations-similar",
+      title: "【類問】円の方程式",
+      description: "数値を変更した応用・確認問題セット（全13問）",
+      isSimilar: true,
+      questions: [
+        {
+          text: "中心が点 $(3, 4)$ で半径が $5$ である円の方程式を求めよ。",
+          correct: "$(x - 3)^2 + (y - 4)^2 = 25$",
+          dummy: ["$(x + 3)^2 + (y + 4)^2 = 25$", "$(x - 3)^2 + (y - 4)^2 = 5$", "$(x + 3)^2 + (y + 4)^2 = 5$"],
+          explanation: "公式 $(x - a)^2 + (y - b)^2 = r^2$ に中心 $(3, 4)$、半径 $5$ を代入します。<br>$(x - 3)^2 + (y - 4)^2 = 5^2 = 25$ となります。"
+        },
+        {
+          text: "中心が点 $(1, -4)$ で半径が $\\sqrt{7}$ である円の方程式を求めよ。",
+          correct: "$(x - 1)^2 + (y + 4)^2 = 7$",
+          dummy: ["$(x + 1)^2 + (y - 4)^2 = 7$", "$(x - 1)^2 + (y + 4)^2 = \\sqrt{7}$", "$(x + 1)^2 + (y - 4)^2 = 49$"],
+          explanation: "公式に中心 $(1, -4)$、半径 $\\sqrt{7}$ を代入します。<br>$(x - 1)^2 + (y - (-4))^2 = (\\sqrt{7})^2$<br>したがって、$(x - 1)^2 + (y + 4)^2 = 7$ となります。"
+        },
+        {
+          text: "中心が点 $(-5, 0)$ で半径が $2$ である円の方程式を求めよ。",
+          correct: "$(x + 5)^2 + y^2 = 4$",
+          dummy: ["$(x - 5)^2 + y^2 = 4$", "$x^2 + (y + 5)^2 = 4$", "$(x + 5)^2 + y^2 = 2$"],
+          explanation: "公式に中心 $(-5, 0)$、半径 $2$ を代入します。<br>$(x - (-5))^2 + (y - 0)^2 = 2^2$<br>したがって、$(x + 5)^2 + y^2 = 4$ となります。"
+        },
+        {
+          text: "中心が原点で半径が $\\sqrt{6}$ である円の方程式を求めよ。",
+          correct: "$x^2 + y^2 = 6$",
+          dummy: ["$x^2 + y^2 = 36$", "$x^2 + y^2 = \\sqrt{6}$", "$(x - 1)^2 + (y - 1)^2 = 6$"],
+          explanation: "原点中心の円の方程式は $x^2 + y^2 = r^2$ です。<br>半径 $\\sqrt{6}$ を代入して、$x^2 + y^2 = (\\sqrt{6})^2 = 6$ となります。"
+        },
+        {
+          text: "方程式 $(x - 1)^2 + (y + 5)^2 = 16$ が表す円の中心の座標と半径を求めよ。",
+          correct: "中心 $(1, -5)$，半径 $4$",
+          dummy: ["中心 $(-1, 5)$，半径 $4$", "中心 $(1, -5)$，半径 $16$", "中心 $(-1, 5)$，半径 $16$"],
+          explanation: "標準形 $(x - a)^2 + (y - b)^2 = r^2$ と比較します。<br>$a = 1, b = -5, r^2 = 16 \\Rightarrow r = 4$<br>したがって、中心は $(1, -5)$、半径は $4$ です。"
+        },
+        {
+          text: "方程式 $x^2 + (y - 2)^2 = 13$ が表す円の中心の座標と半径を求めよ。",
+          correct: "中心 $(0, 2)$，半径 $\\sqrt{13}$",
+          dummy: ["中心 $(2, 0)$，半径 $\\sqrt{13}$", "中心 $(0, -2)$，半径 $13$", "中心 $(0, 2)$，半径 $13$"],
+          explanation: "$(x - 0)^2 + (y - 2)^2 = (\\sqrt{13})^2$ と変形できます。<br>したがって、中心は $(0, 2)$、半径は $\\sqrt{13}$ です。"
+        },
+        {
+          text: "2点 $\\text{A}(1, 3)$, $\\text{B}(5, -1)$ を結ぶ線分を直径とする円について、中心の座標と半径を求めよ。",
+          correct: "中心 $(3, 1)$，半径 $2\\sqrt{2}$",
+          dummy: ["中心 $(3, 1)$，半径 $8$", "中心 $(6, 2)$，半径 $2\\sqrt{2}$", "中心 $(3, 1)$，半径 $2$"],
+          explanation: "中心は中点なので $\\left(\\frac{1+5}{2}, \\frac{3+(-1)}{2}\\right) = (3, 1)$ です。<br>半径は中心 $(3, 1)$ と点 $\\text{A}(1, 3)$ の距離なので、<br>$\\sqrt{(1-3)^2 + (3-1)^2} = \\sqrt{4 + 4} = \\sqrt{8} = 2\\sqrt{2}$ となります。"
+        },
+        {
+          text: "2点 $\\text{A}(1, 3)$, $\\text{B}(5, -1)$ を結ぶ線分を直径とする円の方程式を求めよ。",
+          correct: "$(x - 3)^2 + (y - 1)^2 = 8$",
+          dummy: ["$(x + 3)^2 + (y + 1)^2 = 8$", "$(x - 3)^2 + (y - 1)^2 = 64$", "$(x - 3)^2 + (y - 1)^2 = 2\\sqrt{2}$"],
+          explanation: "中心 $(3, 1)$、半径 $2\\sqrt{2}$ より、方程式は<br>$(x - 3)^2 + (y - 1)^2 = (2\\sqrt{2})^2 = 8$ となります。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 - 4x - 6y + 4 = 0$ はどのような図形を表すか。",
+          correct: "中心 $(2, 3)$，半径 $3$ の円",
+          dummy: ["中心 $(-2, -3)$，半径 $3$ の円", "中心 $(2, 3)$，半径 $9$ の円", "中心 $(-2, -3)$，半径 $9$ の円"],
+          explanation: "平方完成します。<br>$(x - 2)^2 - 4 + (y - 3)^2 - 9 + 4 = 0$<br>$(x - 2)^2 + (y - 3)^2 = 9$<br>したがって、中心 $(2, 3)$、半径 $3$ の円を表します。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 - 2x - 6y - 15 = 0$ はどのような図形を表すか。",
+          correct: "中心 $(1, 3)$，半径 $5$ の円",
+          dummy: ["中心 $(-1, -3)$，半径 $5$ の円", "中心 $(1, 3)$，半径 $25$ の円", "中心 $(-1, -3)$，半径 $25$ の円"],
+          explanation: "平方完成します。<br>$(x^2 - 2x) + (y^2 - 6y) - 15 = 0$<br>$(x - 1)^2 - 1 + (y - 3)^2 - 9 - 15 = 0$<br>$(x - 1)^2 + (y - 3)^2 = 25$<br>したがって、中心 $(1, 3)$、半径 $5$ の円を表します。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 - 8x + 2y + 8 = 0$ はどのような図形を表すか。",
+          correct: "中心 $(4, -1)$，半径 $3$ の円",
+          dummy: ["中心 $(-4, 1)$，半径 $3$ の円", "中心 $(4, -1)$，半径 $9$ の円", "中心 $(-4, 1)$，半径 $9$ の円"],
+          explanation: "平方完成します。<br>$(x - 4)^2 - 16 + (y + 1)^2 - 1 + 8 = 0$<br>$(x - 4)^2 + (y + 1)^2 = 9$<br>したがって、中心 $(4, -1)$、半径 $3$ の円を表します。"
+        },
+        {
+          text: "方程式 $x^2 + y^2 + 2x - 4y - 1 = 0$ はどのような図形を表すか。",
+          correct: "中心 $(-1, 2)$，半径 $\\sqrt{6}$ の円",
+          dummy: ["中心 $(1, -2)$，半径 $\\sqrt{6}$ の円", "中心 $(-1, 2)$，半径 $6$ の円", "中心 $(1, -2)$，半径 $6$ の円"],
+          explanation: "平方完成します。<br>$(x + 1)^2 - 1 + (y - 2)^2 - 4 - 1 = 0$<br>$(x + 1)^2 + (y - 2)^2 = 6$<br>したがって、中心 $(-1, 2)$、半径 $\\sqrt{6}$ の円を表します。"
+        },
+        {
+          text: "3点 $\\text{A}(0, 0)$, $\\text{B}(2, 0)$, $\\text{C}(0, 4)$ を通る円の方程式を求めよ。",
+          correct: "$x^2 + y^2 - 2x - 4y = 0$",
+          dummy: ["$x^2 + y^2 + 2x + 4y = 0$", "$x^2 + y^2 - 4x - 2y = 0$", "$x^2 + y^2 - 2x - 4y + 4 = 0$"],
+          explanation: "円の一般形 $x^2 + y^2 + lx + my + n = 0$ に3点を代入します。<br>原点 $(0,0)$ を通るので $n = 0$<br>点 $\\text{B}(2,0)$: $4 + 2l = 0 \\Rightarrow l = -2$<br>点 $\\text{C}(0,4)$: $16 + 4m = 0 \\Rightarrow m = -4$<br>よって、方程式は $x^2 + y^2 - 2x - 4y = 0$ となります。"
         }
+      ]
+    }
+  ];
 
-        function toggleSuperscriptMode() { isSuperscriptMode ? disableSuperscriptMode() : enableSuperscriptMode(); }
-        function enableSuperscriptMode() {
-            isSuperscriptMode = true;
-            document.getElementById('mode-indicator')?.classList.remove('hidden');
+  let currentSet = null;
+  let currentQuestions = [];
+  let currentQIndex = 0;
+  let score = 0;
+  let userAnswers = []; 
+  let userInfo = { grade: "", classNum: "", number: "", name: "" };
+  let isMemoVisible = false;
+
+  function populateSelectOptions() {
+    const gradeSelect = document.getElementById("input-grade");
+    const classSelect = document.getElementById("input-class");
+    const numberSelect = document.getElementById("input-number");
+
+    gradeSelect.innerHTML = '<option value="">選択</option>';
+    classSelect.innerHTML = '<option value="">選択</option>';
+    numberSelect.innerHTML = '<option value="">選択</option>';
+
+    for (let i = 1; i <= 3; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      gradeSelect.appendChild(opt);
+    }
+
+    for (let i = 1; i <= 4; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      classSelect.appendChild(opt);
+    }
+
+    for (let i = 1; i <= 40; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      numberSelect.appendChild(opt);
+    }
+  }
+
+  function loadUserInfo() {
+    const saved = localStorage.getItem("mathQuizUserInfo");
+    if (saved) {
+      userInfo = JSON.parse(saved);
+      if (userInfo.grade && userInfo.classNum && userInfo.number && userInfo.name) {
+        document.getElementById("input-grade").value = userInfo.grade;
+        document.getElementById("input-class").value = userInfo.classNum;
+        document.getElementById("input-number").value = userInfo.number;
+        document.getElementById("input-name").value = userInfo.name;
+        updateUserDisplayBar();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function saveUserInfo(e) {
+    e.preventDefault();
+    userInfo.grade = document.getElementById("input-grade").value;
+    userInfo.classNum = document.getElementById("input-class").value;
+    userInfo.number = document.getElementById("input-number").value;
+    userInfo.name = document.getElementById("input-name").value.trim();
+
+    localStorage.setItem("mathQuizUserInfo", JSON.stringify(userInfo));
+    updateUserDisplayBar();
+    showMenu();
+  }
+
+  function resetAllData() {
+    if (confirm("名前・学年組情報およびすべての解答履歴（正答率）を削除して初期化しますか？")) {
+      localStorage.clear();
+      userInfo = { grade: "", classNum: "", number: "", name: "" };
+      document.getElementById("input-grade").value = "";
+      document.getElementById("input-class").value = "";
+      document.getElementById("input-number").value = "";
+      document.getElementById("input-name").value = "";
+      alert("データをすべてリセットしました。");
+      showUserInfoForm();
+    }
+  }
+
+  function updateUserDisplayBar() {
+    const textEl = document.getElementById("user-display-text");
+    textEl.textContent = `👤 ${userInfo.grade}年 ${userInfo.classNum}組 ${userInfo.number}番  ${userInfo.name} さん`;
+  }
+
+  function showUserInfoForm() {
+    document.getElementById("user-info-box").style.display = "block";
+    document.getElementById("menu-box").style.display = "none";
+    document.getElementById("quiz-box").style.display = "none";
+    document.getElementById("score-box").style.display = "none";
+  }
+
+  function renderMath() {
+    if (window.MathJax) {
+      MathJax.typesetPromise();
+    }
+  }
+
+  function getAccuracyRecord(setId) {
+    const saved = localStorage.getItem(`accuracy_${setId}`);
+    return saved !== null ? saved : null;
+  }
+
+  function saveAccuracyRecord(setId, accuracyRate) {
+    localStorage.setItem(`accuracy_${setId}`, accuracyRate);
+  }
+
+  function showMenu() {
+    document.getElementById("user-info-box").style.display = "none";
+    document.getElementById("menu-box").style.display = "block";
+    document.getElementById("quiz-box").style.display = "none";
+    document.getElementById("score-box").style.display = "none";
+
+    const container = document.getElementById("menu-list-container");
+    container.innerHTML = "";
+
+    quizSets.forEach(set => {
+      const card = document.createElement("div");
+      
+      if (set.isSimilar) {
+        card.className = "menu-card similar-card";
+      } else {
+        card.className = "menu-card";
+      }
+
+      const acc = getAccuracyRecord(set.id);
+      const accText = acc !== null ? `正答率: ${acc}%` : "未回答";
+
+      card.innerHTML = `
+        <div>
+          <div class="menu-card-title">${set.title}</div>
+          <div class="menu-card-desc">${set.description}</div>
+        </div>
+        <div class="menu-card-stats">
+          <span class="menu-card-badge">${set.questions.length}問</span>
+          <span class="menu-card-accuracy">${accText}</span>
+        </div>
+      `;
+      card.onclick = () => startQuiz(set.id);
+      container.appendChild(card);
+    });
+
+    renderMath();
+  }
+
+  function startQuiz(setId) {
+    currentSet = quizSets.find(s => s.id === setId);
+    currentQuestions = [...currentSet.questions];
+    currentQIndex = 0;
+    score = 0;
+    userAnswers = [];
+
+    document.getElementById("menu-box").style.display = "none";
+    document.getElementById("quiz-box").style.display = "block";
+    document.getElementById("score-box").style.display = "none";
+
+    isMemoVisible = false;
+    updateMemoVisibility();
+
+    showQuestion();
+  }
+
+  function showQuestion() {
+    document.getElementById("result-section").style.display = "none";
+    
+    // 次の問題へ移った際にメモキャンバスをオートクリア
+    clearMemoCanvas();
+
+    const q = currentQuestions[currentQIndex];
+    document.getElementById("q-num").textContent = `第 ${currentQIndex + 1} 問 / 全 ${currentQuestions.length} 問`;
+    
+    const titleEl = document.getElementById("q-title");
+    titleEl.innerHTML = q.text;
+
+    const optionsContainer = document.getElementById("options-container");
+    optionsContainer.innerHTML = "";
+
+    let choices = [
+      { text: q.correct, isCorrect: true },
+      ...q.dummy.map(d => ({ text: d, isCorrect: false }))
+    ];
+    
+    choices.sort(() => Math.random() - 0.5);
+
+    choices.forEach(choice => {
+      const btn = document.createElement("button");
+      btn.className = "btn-option";
+      btn.innerHTML = choice.text;
+      
+      btn.onclick = () => checkAnswer(choice.isCorrect, btn, q);
+      optionsContainer.appendChild(btn);
+    });
+
+    renderMath();
+  }
+
+  function checkAnswer(isCorrect, selectedBtn, questionObj) {
+    const buttons = document.querySelectorAll(".btn-option");
+    buttons.forEach(btn => btn.disabled = true);
+
+    userAnswers.push({
+      qIndex: currentQIndex + 1,
+      isCorrect: isCorrect
+    });
+
+    if (isCorrect) {
+      score++;
+      selectedBtn.classList.add("correct-choice");
+      document.getElementById("result-text").textContent = "⭕️ 正解！";
+      document.getElementById("result-text").className = "result-header correct";
+    } else {
+      selectedBtn.classList.add("wrong-choice");
+      document.getElementById("result-text").textContent = "❌ 不正解...";
+      document.getElementById("result-text").className = "result-header incorrect";
+      
+      buttons.forEach(btn => {
+        if (btn.innerHTML.trim() === questionObj.correct.trim()) {
+          btn.classList.add("correct-choice");
         }
-        function disableSuperscriptMode() {
-            isSuperscriptMode = false;
-            document.getElementById('mode-indicator')?.classList.add('hidden');
-        }
+      });
+    }
 
-        function keypadPress(val) {
-            if (!activeTargetId) return;
-            let current = inputRawData[activeTargetId] || "";
-            if (['+', '-', '×', '(', ')', '√', '.', '、', ',', '=', 'x', 'y', '±'].includes(val)) {
-                disableSuperscriptMode();
-                inputRawData[activeTargetId] = current + val;
-            } else {
-                inputRawData[activeTargetId] = current + (isSuperscriptMode ? (superMap[val] || val) : val);
-            }
-            updateInputDisplays();
-        }
+    document.getElementById("explanation-text").innerHTML = questionObj.explanation;
+    document.getElementById("result-section").style.display = "block";
 
-        function keypadBackspace() {
-            if (!activeTargetId) return;
-            let current = inputRawData[activeTargetId] || "";
-            if (current.length > 0) {
-                inputRawData[activeTargetId] = current.slice(0, -1);
-                updateInputDisplays();
-            }
-        }
+    renderMath();
+  }
 
-        function keypadClear() {
-            if (!activeTargetId) return;
-            inputRawData[activeTargetId] = "";
-            disableSuperscriptMode();
-            updateInputDisplays();
-        }
+  function nextQuestion() {
+    currentQIndex++;
+    if (currentQIndex < currentQuestions.length) {
+      showQuestion();
+    } else {
+      showScore();
+    }
+  }
 
-        function normalizeSuperscript(str) {
-            if (!str) return '';
-            const map = {'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁺':'+','⁻':'-'};
-            return str.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]+/g, match => {
-                let converted = '';
-                for (let char of match) converted += map[char] || char;
-                return (converted.length > 1) ? `^(${converted})` : `^${converted}`;
-            });
-        }
+  function showScore() {
+    document.getElementById("quiz-box").style.display = "none";
+    document.getElementById("score-box").style.display = "block";
 
-        function canonicalize(str) {
-            if (!str) return "";
-            return str.replace(/\s+/g, '')
-                      .replace(/、/g, ',')
-                      .replace(/\*/g, '');
-        }
+    const total = currentQuestions.length;
+    const accuracyRate = Math.round((score / total) * 100);
 
-        function compareMathExpressions(expr1, expr2) {
-            if (!expr1 || !expr2) return false;
-            
-            const c1 = canonicalize(expr1);
-            const c2 = canonicalize(expr2);
-            if (c1 === c2) return true;
+    saveAccuracyRecord(currentSet.id, accuracyRate);
 
-            return false;
-        }
+    let answerDetailsStr = userAnswers.map(a => a.isCorrect ? "○" : "×").join("");
 
-        function checkCurrentQuestion() {
-            const cat = db.find(c => c.id === currentCatId);
-            if (!cat) return;
-            const q = cat.questions[currentQIndex];
+    document.getElementById("score-title").textContent = `🎉 「${currentSet.title}」 終了 🎉`;
+    document.getElementById("score-text").textContent = `${total} 問中 ${score} 問 正解！`;
+    document.getElementById("accuracy-text").textContent = `正答率: ${accuracyRate}%`;
+    document.getElementById("details-text").textContent = `結果: ${answerDetailsStr}`;
 
-            let isCorrect = false;
-            let displayAnsText = "";
+    sendDataToTeacher(currentSet.id, currentSet.title, score, total, accuracyRate, answerDetailsStr);
+    renderMath();
+  }
 
-            if (cat.type === 'center_radius') {
-                const userCx = (inputRawData['input-cx'] || '').trim();
-                const userCy = (inputRawData['input-cy'] || '').trim();
-                const userR  = (inputRawData['input-r']  || '').trim();
+  function sendDataToTeacher(setId, setTitle, score, total, accuracy, details) {
+    const statusEl = document.getElementById("send-status");
 
-                if (!userCx || !userCy || !userR) {
-                    showToast("中心のx座標・y座標・半径をすべて入力してください", true);
-                    return;
-                }
+    if (!GAS_WEBAPP_URL) {
+      statusEl.textContent = "※送信先URL未設定（ローカル記録のみ完了）";
+      return;
+    }
 
-                const checkCx = compareMathExpressions(normalizeSuperscript(userCx), q.cx);
-                const checkCy = compareMathExpressions(normalizeSuperscript(userCy), q.cy);
-                const checkR  = compareMathExpressions(normalizeSuperscript(userR),  q.r);
+    statusEl.textContent = "先生へデータを送信中...";
 
-                isCorrect = checkCx && checkCy && checkR;
-                displayAnsText = `中心 (${q.cx}, ${q.cy}), 半径 ${q.r}`;
-            } else {
-                let userVal = "";
-                if (isFractionInputMode) {
-                    const num = (inputRawData['input-num'] || '').trim();
-                    const den = (inputRawData['input-den'] || '').trim();
-                    if (!num || !den) { showToast("分子と分母の両方を入力してください", true); return; }
-                    userVal = `${num}/${den}`;
-                } else {
-                    userVal = (inputRawData['input-single'] || '').trim();
-                    if (!userVal) { showToast("答えを入力してください", true); return; }
-                }
+    const payload = {
+      grade: parseInt(userInfo.grade, 10),
+      classNum: parseInt(userInfo.classNum, 10),
+      number: parseInt(userInfo.number, 10),
+      name: userInfo.name,
+      setId: setId,
+      setTitle: setTitle,
+      score: score,
+      total: total,
+      accuracy: accuracy,
+      details: details
+    };
 
-                disableSuperscriptMode();
-                const normUser = normalizeSuperscript(userVal);
-                isCorrect = compareMathExpressions(normUser, q.a) || (q.altA && compareMathExpressions(normUser, q.altA));
-                displayAnsText = q.a;
-            }
+    fetch(GAS_WEBAPP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      statusEl.textContent = "✅ 先生へ学習記録を正常に送信しました！";
+      statusEl.style.color = "#28a745";
+    })
+    .catch(err => {
+      console.error(err);
+      statusEl.textContent = "⚠️ 送信に失敗しました（ネットワークエラー）";
+      statusEl.style.color = "#dc3545";
+    });
+  }
 
-            userAnswers[`${currentCatId}-${currentQIndex}`] = { isCorrect, timestamp: new Date().toLocaleString("ja-JP") };
-            saveProgress();
+  function restartQuiz() {
+    startQuiz(currentSet.id);
+  }
 
-            document.getElementById('question-result-status').innerHTML = isCorrect 
-                ? '<span class="text-[#82b882]">◯ 正解！</span>' 
-                : '<span class="text-[#f08c8c]">✕ 不正解</span>';
+  /* --- サイドメモ（計算用キャンバス）プログラム --- */
+  let memoCanvas = document.getElementById("memo-canvas");
+  let memoCtx = memoCanvas.getContext("2d");
+  let isDrawing = false;
+  let memoMode = 'pen';
+  let lastX = 0;
+  let lastY = 0;
 
-            document.getElementById('question-correct-ans').innerHTML = formatMath(displayAnsText);
-            document.getElementById('question-exp-text').innerHTML = formatMath(q.exp);
-            document.getElementById('question-exp-box').classList.remove('hidden');
+  function toggleMemoLayout() {
+    isMemoVisible = !isMemoVisible;
+    updateMemoVisibility();
+  }
 
-            updateDashboardStats();
-        }
+  function updateMemoVisibility() {
+    const mainContainer = document.getElementById("main-container");
+    const memoPanel = document.getElementById("memo-panel");
+    const toggleBtn = document.getElementById("memo-toggle-btn");
 
-        function sendOverallDataToSpreadsheet() {
-            let totalCorrect = 0, totalAttempted = 0;
-            const totalQuestions = getTotalQuestionsCount();
+    if (isMemoVisible) {
+      mainContainer.classList.add("split-layout");
+      memoPanel.style.display = "flex";
+      toggleBtn.textContent = "✏️ 計算メモを隠す";
+      toggleBtn.classList.add("active");
+      setTimeout(resizeMemoCanvas, 50);
+    } else {
+      mainContainer.classList.remove("split-layout");
+      memoPanel.style.display = "none";
+      toggleBtn.textContent = "✏️ 計算メモを表示";
+      toggleBtn.classList.remove("active");
+    }
+  }
 
-            Object.values(userAnswers).forEach(item => {
-                if (item) { totalAttempted++; if (item.isCorrect) totalCorrect++; }
-            });
+  function resizeMemoCanvas() {
+    const wrapper = document.getElementById("memo-canvas-wrapper");
+    if (!wrapper || wrapper.clientWidth === 0) return;
 
-            const overallRate = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+    if (memoCanvas.width !== wrapper.clientWidth || memoCanvas.height !== wrapper.clientHeight) {
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = memoCanvas.width;
+      tempCanvas.height = memoCanvas.height;
+      const tempCtx = tempCanvas.getContext("2d");
+      tempCtx.drawImage(memoCanvas, 0, 0);
 
-            const payload = {
-                date: new Date().toLocaleString("ja-JP"),
-                unitTitle: "円の方程式",
-                name: userName || "未入力",
-                grade: userGrade || "-",
-                classNum: userClass || "-",
-                studentNum: userNum || "-",
-                totalAttempted: `${totalAttempted} / ${totalQuestions}`,
-                totalCorrect: `${totalCorrect} / ${totalQuestions}`,
-                overallRate: `${overallRate}%`
-            };
+      memoCanvas.width = wrapper.clientWidth;
+      memoCanvas.height = wrapper.clientHeight;
 
-            const btn = document.getElementById('btn-send-data');
-            btn.disabled = true;
-            btn.innerText = "送信中...";
+      memoCtx.drawImage(tempCanvas, 0, 0);
+      updateMemoStyle();
+    }
+  }
 
-            fetch(FIXED_API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            }).then(() => {
-                showToast("送信できました");
-            }).catch(() => {
-                showToast("送信エラーが発生しました", true);
-            }).finally(() => {
-                btn.disabled = false;
-                btn.innerHTML = "📤 成績データを送信する";
-            });
-        }
+  function setMemoMode(mode) {
+    memoMode = mode;
+    document.getElementById("tool-pen").classList.toggle("active", mode === 'pen');
+    document.getElementById("tool-eraser").classList.toggle("active", mode === 'eraser');
+    updateMemoStyle();
+  }
 
-        function formatMath(t) {
-            if (!t) return "";
-            return t.replace(/\*/g, '×')
-                    .replace(/√([0-9a-zA-Z]+|\([0-9a-zA-Z\+\-\*\/]+\))/g, '<span class="sqrt-wrap"><svg class="sqrt-svg" viewBox="0 0 10 15"><path d="M1,8 L3,8 L5,14 L9,1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span class="sqrt-body">$1</span></span>')
-                    .replace(/\\frac\{(.+?)\}\{(.+?)\}/g, '<span class="frac"><span class="num">$1</span><span class="den">$2</span></span>')
-                    .replace(/\^([0-9a-zA-Z]+|\([0-9a-zA-Z\+\-\*\/]+\))/g, '<sup>$1</sup>');
-        }
+  function updateMemoStyle() {
+    memoCtx.lineCap = "round";
+    memoCtx.lineJoin = "round";
+    const size = document.getElementById("memo-size").value;
+    
+    if (memoMode === 'eraser') {
+      memoCtx.globalCompositeOperation = "destination-out";
+      memoCtx.lineWidth = size * 4;
+    } else {
+      memoCtx.globalCompositeOperation = "source-over";
+      memoCtx.strokeStyle = document.getElementById("memo-color").value;
+      memoCtx.lineWidth = size;
+    }
+  }
 
-        function saveUserInfo() {
-            const nameIn = document.getElementById('user-name-input');
-            const gradeIn = document.getElementById('user-grade-input');
-            const classIn = document.getElementById('user-class-input');
-            const numIn = document.getElementById('user-num-input');
+  function clearMemoCanvas() {
+    memoCtx.clearRect(0, 0, memoCanvas.width, memoCanvas.height);
+  }
 
-            if (nameIn) userName = nameIn.value.trim();
-            if (gradeIn) userGrade = gradeIn.value.trim();
-            if (classIn) userClass = classIn.value.trim();
-            if (numIn) userNum = numIn.value.trim();
+  function getCanvasPos(e) {
+    const rect = memoCanvas.getBoundingClientRect();
+    let clientX = e.clientX;
+    let clientY = e.clientY;
 
-            if (!userName || !userGrade || !userClass || !numIn) {
-                showToast("すべての項目（学年・組・番号・氏名）を入力してください", true);
-                return;
-            }
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    }
 
-            localStorage.setItem('math_circle_user_name', userName);
-            localStorage.setItem('math_circle_user_grade', userGrade);
-            localStorage.setItem('math_circle_user_class', userClass);
-            localStorage.setItem('math_circle_user_num', userNum);
+    const scaleX = memoCanvas.width / rect.width;
+    const scaleY = memoCanvas.height / rect.height;
 
-            updateNameDisplay();
-            showToast("学習者情報を保存しました");
-            switchTab('dashboard');
-        }
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
+    };
+  }
 
-        function updateNameDisplay() {
-            const infoEl = document.getElementById('dash-user-info');
-            if (infoEl) {
-                if (!userName && !userGrade && !userClass && !userNum) {
-                    infoEl.innerText = "未入力";
-                } else {
-                    const prefix = (userGrade || userClass || userNum) ? `${userGrade ? userGrade + '年' : ''}${userClass ? userClass + '組' : ''}${userNum ? userNum + '番 ' : ''}` : '';
-                    infoEl.innerText = `${prefix}${userName || '名無し'}`;
-                }
-            }
-        }
+  function startDrawing(e) {
+    isDrawing = true;
+    const pos = getCanvasPos(e);
+    lastX = pos.x;
+    lastY = pos.y;
+  }
 
-        function saveProgress() { localStorage.setItem('math_circle_answers_v1', JSON.stringify(userAnswers)); }
-        function loadProgress() {
-            const data = localStorage.getItem('math_circle_answers_v1');
-            if (data) { try { userAnswers = JSON.parse(data); } catch(e) { userAnswers = {}; } }
-        }
+  function draw(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
 
-        function resetProgress() {
-            if (!confirm("リセットしていいですか？")) {
-                return;
-            }
-            userAnswers = {};
-            localStorage.removeItem('math_circle_answers_v1');
-            updateDashboardStats();
-            showToast("成績データをリセットしました");
-        }
-    </script>
+    const pos = getCanvasPos(e);
+
+    memoCtx.beginPath();
+    memoCtx.moveTo(lastX, lastY);
+    memoCtx.lineTo(pos.x, pos.y);
+    memoCtx.stroke();
+
+    lastX = pos.x;
+    lastY = pos.y;
+  }
+
+  function stopDrawing() {
+    isDrawing = false;
+  }
+
+  memoCanvas.addEventListener("mousedown", startDrawing);
+  memoCanvas.addEventListener("mousemove", draw);
+  memoCanvas.addEventListener("mouseup", stopDrawing);
+  memoCanvas.addEventListener("mouseout", stopDrawing);
+
+  memoCanvas.addEventListener("touchstart", startDrawing, { passive: false });
+  memoCanvas.addEventListener("touchmove", draw, { passive: false });
+  memoCanvas.addEventListener("touchend", stopDrawing);
+
+  window.addEventListener("resize", () => {
+    if (isMemoVisible) {
+      resizeMemoCanvas();
+    }
+  });
+
+  /* --- コピー・右クリック・選択防止処理 --- */
+  const preventCopyEvents = (e) => {
+    e.preventDefault();
+    return false;
+  };
+
+  // コピー、切り取り、右クリック（コンテキストメニュー）、テキスト選択開始の無効化
+  document.addEventListener("copy", preventCopyEvents);
+  document.addEventListener("cut", preventCopyEvents);
+  document.addEventListener("contextmenu", preventCopyEvents);
+  document.addEventListener("selectstart", preventCopyEvents);
+
+  populateSelectOptions(); 
+
+  if (loadUserInfo()) {
+    showMenu();
+  } else {
+    showUserInfoForm();
+  }
+</script>
+
 </body>
 </html>
